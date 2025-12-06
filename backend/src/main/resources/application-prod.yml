@@ -24,7 +24,7 @@ spring:
               - openid
               - profile
               - email
-            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            redirect-uri: "https://kb-image-service.p-e.kr/login/oauth2/code/google"
 
 # 애플리케이션 설정
 app:
@@ -35,10 +35,10 @@ aws:
   s3:
     bucket-name: provide-image
   region: ap-northeast-2
-  access-key-id: ${ AWS_ACCESS_KEY_ID }
-  secret-key-id: ${ AWS_SECRET_ACCESS_KEY }
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-key-id: ${AWS_SECRET_ACCESS_KEY}
 
 google:
   api:
-    key: ${ GOOGLE_API_KEY }
+    key: ${GOOGLE_API_KEY}
 
