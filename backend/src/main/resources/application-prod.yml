@@ -3,9 +3,9 @@ spring:
     name: backend
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://{RDS_HOST}:{RDS_PORT}/{RDS_DB_NAME}
-    username: {RDS_USERNAME}
-    password: {RDS_PASSWORD}
+    url: jdbc:mariadb://${RDS_HOST}:${RDS_PORT}/${RDS_DB_NAME}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
 
   # jpa config
   jpa:
@@ -18,8 +18,8 @@ spring:
       client:
         registration:
           google:
-            client-id: {GOOGLE_CLIENT_ID}
-            client-secret: {GOOGLE_CLIENT_SECRET}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - openid
               - profile
@@ -35,10 +35,10 @@ aws:
   s3:
     bucket-name: provide-image
   region: ap-northeast-2
-  access-key-id: { AWS_ACCESS_KEY_ID }
-  secret-key-id: { AWS_SECRET_ACCESS_KEY }
+  access-key-id: ${ AWS_ACCESS_KEY_ID }
+  secret-key-id: ${ AWS_SECRET_ACCESS_KEY }
 
 google:
   api:
-    key: { GOOGLE_API_KEY }
+    key: ${ GOOGLE_API_KEY }
 
