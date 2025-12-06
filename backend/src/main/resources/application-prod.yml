@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: backend
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://{RDS_HOST}:{RDS_PORT}/{RDS_DB_NAME}
+    username: {RDS_USERNAME}
+    password: {RDS_PASSWORD}
+
+  # jpa config
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  # OAuth2 설정
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: {GOOGLE_CLIENT_ID}
+            client-secret: {GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+
+# 애플리케이션 설정
+app:
+  # 테스트 모드 활성화 (true: API 호출 없이 더미 데이터 사용)
+  mock-mode: false
+
+aws:
+  s3:
+    bucket-name: provide-image
+  region: ap-northeast-2
+  access-key-id: { AWS_ACCESS_KEY_ID }
+  secret-key-id: { AWS_SECRET_ACCESS_KEY }
+
+google:
+  api:
+    key: { GOOGLE_API_KEY }
+
