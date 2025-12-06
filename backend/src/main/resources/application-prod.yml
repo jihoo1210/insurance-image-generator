@@ -1,6 +1,4 @@
 spring:
-  server:
-    port: 5000
   application:
     name: backend
   datasource:
@@ -44,3 +42,5 @@ google:
   api:
     key: ${GOOGLE_API_KEY}
 
+server:
+  port: 5000
