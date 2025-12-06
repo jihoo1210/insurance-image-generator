@@ -1,4 +1,6 @@
 spring:
+  server:
+    port: 5000
   application:
     name: backend
   datasource:
