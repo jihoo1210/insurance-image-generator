@@ -426,8 +426,76 @@ body {
     box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
 }
 
+/* ==================== Image Attachment ==================== */
+.image-attachment-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+}
 
-/* ==================== Alerts ==================== */
+.btn-attach-image {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #5B9CFF 0%, #7EAFFF 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-attach-image:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(91, 156, 255, 0.3);
+}
+
+.attachment-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(91, 156, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid rgba(91, 156, 255, 0.3);
+    width: 100%;
+}
+
+#attachmentFileName {
+    color: var(--text-dark);
+    font-weight: 500;
+    flex: 1;
+    word-break: break-all;
+}
+
+.btn-remove-attachment {
+    background: #FF6B6B;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-remove-attachment:hover {
+    background: #FF5252;
+    transform: scale(1.1);
+}
+
+/**
+ * 알림 메시지 스타일
+ */
 .alert {
     padding: 15px 20px;
     border-radius: 6px;

@@ -97,6 +97,7 @@ function goToFavorites() {
 
 /**
  * 폼 제출 시 처리 (Fetch API를 사용한 비동기 GET 요청)
+ * 첨부된 이미지가 있으면 FormData를 사용한 POST 요청
  * @param {Event} event - Form submit event
  */
 function showLoading(event) {
@@ -140,15 +141,34 @@ function showLoading(event) {
     // 로딩 표시
     loadingDiv.style.display = 'block';
 
-    const encodedPrompt = encodeURIComponent(prompt);
-    // *** 이메일 파라미터 추가 ***
     const userEmail = getCurrentUserEmail();
-    const encodedEmail = encodeURIComponent(userEmail);
-    const url = `/generate?prompt=${encodedPrompt}&email=${encodedEmail}`;
 
-    fetch(url, {
+    let fetchPromise;
+
+    // 첨부된 이미지가 있으면 FormData 사용
+    if (attachedImageFile) {
+        const formData = new FormData();
+        formData.append('prompt', prompt);
+        formData.append('email', userEmail);
+        formData.append('attachImage', attachedImageFile);
+
+        fetchPromise = fetch('/generate', {
+            method: 'POST',
+            body: formData
+            // Content-Type은 자동으로 설정됨 (multipart/form-data)
+        });
+    } else {
+        // 첨부 이미지 없으면 기존 GET 요청
+        const encodedPrompt = encodeURIComponent(prompt);
+        const encodedEmail = encodeURIComponent(userEmail);
+        const url = `/generate?prompt=${encodedPrompt}&email=${encodedEmail}`;
+
+        fetchPromise = fetch(url, {
             method: 'GET',
-        })
+        });
+    }
+
+    fetchPromise
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);

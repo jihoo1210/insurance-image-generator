@@ -14,7 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
@@ -60,13 +62,88 @@ public class ImageController {
 
             // 결과를 모델에 추가
             if (s3Key != null) {
-                String imageUrl = "/download/" + s3Key;
+                // Presigned URL 생성 (S3에서 직접 이미지 제공)
+                String presignedUrl = imgService.generateS3Url(s3Key);
 
                 model.addAttribute("success", true);
                 model.addAttribute("s3Key", s3Key);
-                model.addAttribute("imageUrl", imageUrl);
+                model.addAttribute("imageUrl", presignedUrl != null ? presignedUrl : "/download/" + s3Key);
                 model.addAttribute("message", "이미지 생성 성공!");
-                log.info("이미지 생성 성공 - S3 키: {}, imageUrl: {}", s3Key, imageUrl);
+                log.info("이미지 생성 성공 - S3 키: {}, Presigned URL 생성 완료", s3Key);
+            } else {
+                model.addAttribute("success", false);
+                model.addAttribute("message", "이미지 생성에 실패했습니다.");
+                log.warn("이미지 생성 실패");
+            }
+
+        } catch (ImgService.QuotaExceededException e) {
+            log.warn("API 할당량 초과: {}", e.getMessage());
+            model.addAttribute("success", false);
+            model.addAttribute("message", "⚠️ " + e.getMessage());
+            model.addAttribute("isQuotaExceeded", true);
+            model.addAttribute("retryAfterMillis", e.getRetryAfterMillis());
+
+        } catch (Exception e) {
+            log.error("이미지 생성 중 예외 발생: ", e);
+            e.printStackTrace();
+            model.addAttribute("success", false);
+            model.addAttribute("message", "오류 발생: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+        }
+
+        model.addAttribute("prompt", prompt);
+
+        return "index";
+    }
+
+    /**
+     * 이미지 첨부를 포함한 이미지 생성 요청 처리 (POST)
+     *
+     * @param prompt 이미지 생성을 위한 프롬프트
+     * @param email 사용자 이메일
+     * @param attachImage 첨부된 이미지 파일
+     * @param model 뷰에 전달할 데이터
+     * @return index.mustache (결과 포함)
+     */
+    @PostMapping("/generate")
+    public String generateImageWithAttachment(
+            @RequestParam(name = "prompt") String prompt,
+            @RequestParam(name = "email", required = false, defaultValue = "") String email,
+            @RequestParam(name = "attachImage", required = false) MultipartFile attachImage,
+            Model model) {
+
+        log.info("이미지 생성 요청 (첨부 포함) - Prompt: {}, Email: {}, 첨부파일: {}",
+                prompt, email, attachImage != null ? attachImage.getOriginalFilename() : "없음");
+
+        // *** 로그인 상태 확인 및 User 객체 추가 ***
+        mainController.checkLogin(model);
+
+        try {
+            String s3Key;
+
+            if (attachImage != null && !attachImage.isEmpty()) {
+                // 첨부된 이미지가 있으면 해당 이미지를 기반으로 생성
+                s3Key = imgService.generateImageWithAttachment(
+                        prompt,
+                        StringUtils.hasText(email) ? email : "비회원",
+                        attachImage
+                );
+                log.info("첨부 이미지 기반 이미지 생성 - 파일명: {}", attachImage.getOriginalFilename());
+            } else {
+                // 텍스트만으로 생성
+                s3Key = imgService.generateImage(prompt, StringUtils.hasText(email) ? email : "비회원");
+                log.info("텍스트 기반 이미지 생성");
+            }
+
+            // 결과를 모델에 추가
+            if (s3Key != null) {
+                // Presigned URL 생성 (S3에서 직접 이미지 제공)
+                String presignedUrl = imgService.generateS3Url(s3Key);
+
+                model.addAttribute("success", true);
+                model.addAttribute("s3Key", s3Key);
+                model.addAttribute("imageUrl", presignedUrl != null ? presignedUrl : "/download/" + s3Key);
+                model.addAttribute("message", "이미지 생성 성공!");
+                log.info("이미지 생성 성공 - S3 키: {}, Presigned URL 생성 완료", s3Key);
             } else {
                 model.addAttribute("success", false);
                 model.addAttribute("message", "이미지 생성에 실패했습니다.");

@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>KB 손해보험 장기 지점 이미지 서비스</title>
+    <title>KB 손해보험 김포 한강 지점 이미지 서비스</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body {{#success}}data-success="{{success}}" data-image-url="{{imageUrl}}" data-s3-key="{{s3Key}}" {{/success}}data-message="{{message}}" {{#isQuotaExceeded}}data-is-quota-exceeded="{{isQuotaExceeded}}"{{/isQuotaExceeded}}>
@@ -24,7 +24,7 @@
 
             <!-- 중앙: 제목 -->
             <div class="header-content">
-                <h1>KB 손해보험 장기 지점 이미지 서비스</h1>
+                <h1>KB 손해보험 김포 한강 지점 이미지 서비스</h1>
                 <p>{{message}}</p>
             </div>
 
@@ -59,7 +59,7 @@
             </div>
             <div id="resultDiv" style="display: none;">
                 <div class="image-container">
-                    <img id="resultImage" alt="생성된 이미지" data-s3-key="" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); margin-bottom: 20px;" />
+                    <img id="resultImage" alt="생성된 이미지" data-s3-key="" onclick="openImageInNewTab()" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); margin-bottom: 20px; cursor: pointer;" title="클릭하면 새 창에서 열립니다" />
                     <div class="image-actions">
                         <a id="downloadBtn" download class="btn-download" target="_blank">
                             ⬇️ 다운로드
@@ -72,6 +72,26 @@
             </div>
             <!-- 이미지 생성 폼 -->
             <form id="generateForm" action="/generate" method="get" onsubmit="showLoading(event)" style="width: 100%;">
+                <!-- 이미지 첨부 -->
+                <div class="form-group">
+                    <label for="attachImage">
+                        🖼️ 이미지 첨부 (선택사항)
+                    </label>
+                    <div class="image-attachment-container">
+                        <input type="file" id="attachImage" name="attachImage" accept="image/*" style="display: none;" onchange="handleImageAttachment(event)">
+                        <button type="button" class="btn-attach-image" onclick="document.getElementById('attachImage').click()">
+                            📎 이미지 첨부
+                        </button>
+                        <div id="attachmentStatus" class="attachment-status" style="display: none;">
+                            <span id="attachmentFileName"></span>
+                            <button type="button" class="btn-remove-attachment" onclick="removeAttachment()">✕</button>
+                        </div>
+                    </div>
+                    <small style="color: #888; margin-top: 8px; display: block;">
+                        💡 첨부된 이미지를 기반으로 이미지를 생성합니다.
+                    </small>
+                </div>
+
                 <!-- 프롬프트 입력 -->
                 <div class="form-group">
                     <label for="prompt">

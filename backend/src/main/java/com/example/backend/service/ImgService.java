@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -21,6 +22,8 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import java.time.Duration;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -90,7 +93,7 @@ public class ImgService {
      * @param s3Key S3 객체 키
      * @return Presigned URL (1시간 유효)
      */
-    private String generateS3Url(String s3Key) {
+    public String generateS3Url(String s3Key) {
         try {
             log.debug("S3 Presigned URL 생성 중 - 키: {}", s3Key);
 
@@ -204,6 +207,105 @@ public class ImgService {
 
         } catch (ApiException e) {
             handleApiException(e);
+            return null;
+        } catch (Exception e) {
+            log.error("═══════════════════════════════════════════════════════════");
+            log.error("❌ [예상치 못한 오류]");
+            log.error("오류 클래스: {}", e.getClass().getName());
+            log.error("오류 메시지: {}", e.getMessage());
+            e.printStackTrace();
+            log.error("═══════════════════════════════════════════════════════════");
+            return null;
+        }
+    }
+
+    /**
+     * 첨부된 이미지를 기반으로 이미지 생성
+     *
+     * @param prompt 이미지 생성 프롬프트
+     * @param creatorEmail 이미지 제작자 이메일
+     * @param attachImage 첨부된 이미지 파일
+     * @return 실제 S3 키
+     */
+    public String generateImageWithAttachment(String prompt, String creatorEmail, MultipartFile attachImage) throws QuotaExceededException {
+
+        if (prompt == null || attachImage == null || attachImage.isEmpty()) return null;
+
+        Client client = Client.builder()
+                .apiKey(googleApiKey)
+                .build();
+
+        try {
+            String model = "gemini-3-pro-image-preview";
+
+            // 첨부된 이미지를 Base64로 인코딩
+            byte[] imageBytes = attachImage.getBytes();
+            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+            String mimeType = attachImage.getContentType() != null ? attachImage.getContentType() : "image/jpeg";
+
+            // 이미지 + 텍스트 프롬프트 결합
+            var userContent = Content.builder()
+                    .role("user")
+                    .parts(ImmutableList.of(
+                            Part.fromText(prompt),
+                            Part.fromBytes(imageBytes, mimeType)
+                    ))
+                    .build();
+
+            var configBuilder = GenerateContentConfig.builder();
+
+            var systemContent = Content.builder()
+                    .role("user")
+                    .parts(ImmutableList.of(
+                            Part.fromText("당신은 KB 손해보험 홍보 이미지 제작 전문가입니다. "
+                                    + "사용자가 첨부한 이미지와 요청을 기반으로 새로운 이미지를 생성해야 합니다. "
+                                    + "사용자의 요청에 기반하여 반드시 이미지를 생성해야 합니다. "
+                                    + "사용자는 텍스트 응답이 아닌 이미지 파일 받기를 기대하고 있습니다. "
+                                    + "항상 이미지로 응답해야 합니다. "
+                                    + "어떤 텍스트 응답도 제공하지 마십시오. "
+                                    + "오직 이미지만 생성하고 출력하십시오. "
+                                    + "반드시 인물이 들어갈 필요는 없습니다. "
+                                    + "고객의 요구사항을 저장하여 이후에 제작할 이미지의 참고자료로 활용할 수 있도록 하세요. "
+                                    + "고객이 입력한 프롬프트를 바탕으로 창의적이고 매력적인 이미지를 생성하세요. "
+                                    + "이미지의 해상도가 매우 좋을 필요는 없습니다. "
+                                    + "이미지는 KB 손해보험의 브랜드 이미지에 부합해야 합니다. "
+                                    + "KB 손해보험 다이렉트에 관한 내용은 절대 추가하지 마세요. "
+                                    + "색상은 주로 KB 손해보험과 관련된 색(주 색상: #FFCA00, 보조 색상: #000000, 배경/배색: #FFFFFF)을 사용하고, 신뢰감을 주는 느낌을 강조하세요. "
+                                    + "최종 이미지는 고객의 요구를 충족시키면서도 KB 손해보험의 브랜드 가치를 효과적으로 전달해야 합니다. "
+                                    + "사용자는 한국인이며 소비자 또한 한국인입니다. 오탈자나 어색한 문구가 없도록 주의하세요. "
+                                    + "이미지는 매우 강렬해야 하며 소비자에의 소비욕을 불러 일으켜야 합니다. "
+                                    + "강렬한 이미지를 위해서라면 주조색과 보조색을 과감하게 수정해도 무방합니다. "
+                                    + "반드시 담당자와 상담을 해야만 하는 느낌을 제공해야 합니다. "
+                                    + "이미지 요청에서 지시한 상세 정보는 최종 이미지에 절대 포함되면 안됩니다. "
+                                    + "적당한 설명을 포함하여 직관성이 높게 제작하세요.")
+                    ))
+                    .build();
+            configBuilder.systemInstruction(systemContent);
+
+            GenerateContentConfig config = configBuilder.build();
+            var contents = ImmutableList.of(userContent);
+
+            var response = client.models.generateContent(model, contents, config);
+
+            String savedS3Key = processResponse(response);
+
+            if (savedS3Key != null) {
+                Image image = Image.builder()
+                        .s3Key(savedS3Key)
+                        .prompt(prompt)
+                        .creatorEmail(creatorEmail)
+                        .build();
+                imageRepository.save(image);
+            }
+
+            return savedS3Key;
+
+        } catch (ApiException e) {
+            handleApiException(e);
+            return null;
+        } catch (IOException e) {
+            log.error("첨부 파일 처리 중 오류: {}", e.getMessage());
+            e.printStackTrace();
             return null;
         } catch (Exception e) {
             log.error("═══════════════════════════════════════════════════════════");
@@ -403,4 +505,3 @@ public class ImgService {
                 .toList();
     }
 }
-
