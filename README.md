@@ -449,15 +449,13 @@ aws:
 - [x] OAuth2 인증
 - [x] 세션 관리
 - [x] XSS 방지 (템플릿 엔진)
-
-### 🔒 권장 사항
-- [ ] API 키 환경 변수 관리 (반드시)
-- [ ] AWS IAM 권한 최소화
-- [ ] S3 버킷 정책 재검토
-- [ ] 프로덕션 데이터베이스 전환 (RDS)
-- [ ] SSL/TLS 인증서 설치
-- [ ] Rate Limiting 추가
-- [ ] 로그 모니터링
+- [x] API 키 환경 변수 관리 (반드시)
+- [x] AWS IAM 권한 최소화
+- [x] S3 버킷 정책 재검토
+- [x] 프로덕션 데이터베이스 전환 (RDS)
+- [x] SSL/TLS 인증서 설치
+- [x] Rate Limiting 추가
+- [x] 로그 모니터링
 
 ---
 
@@ -580,8 +578,8 @@ git push origin feature/amazing-feature
 ## 📞 연락처
 
 **프로젝트 관리자**
-- 이메일: your-email@example.com
-- GitHub: [@your-username](https://github.com/your-username)
+- 이메일: jihoostudy1@gmail.com
+- GitHub: [@jihoo1210](https://github.com/jihoo1210)
 
 **문의**
 - 버그 리포트: GitHub Issues
