@@ -6,6 +6,7 @@
 // ==================== State Management ====================
 let isLoading = false;
 let currentUserEmail = '';  // *** 전역 사용자 이메일 상태 ***
+let attachedImageFile = null; // *** 첨부된 이미지 파일 ***
 
 /**
  * 전역으로 사용자 이메일 설정
@@ -26,6 +27,63 @@ function getCurrentUserEmail() {
  */
 function isUserLoggedIn() {
     return currentUserEmail && currentUserEmail.trim() !== '' && currentUserEmail !== 'anonymous';
+}
+
+/**
+ * 이미지 첨부 처리
+ */
+function handleImageAttachment(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 파일 크기 확인 (10MB 제한)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+        showAlert('파일 크기가 너무 큽니다. (최대 10MB)', false);
+        document.getElementById('attachImage').value = '';
+        return;
+    }
+
+    attachedImageFile = file;
+
+    const statusDiv = document.getElementById('attachmentStatus');
+    const fileNameSpan = document.getElementById('attachmentFileName');
+    const attachBtn = document.querySelector('.btn-attach-image');
+
+    fileNameSpan.textContent = `📎 ${file.name}`;
+    statusDiv.style.display = 'flex';
+
+    // 첨부 버튼 색상을 진하게 변경
+    if (attachBtn) {
+        attachBtn.style.background = 'linear-gradient(135deg, #3B73D4 0%, #5B93FF 100%)';
+        attachBtn.style.boxShadow = '0 4px 12px rgba(59, 115, 212, 0.5)';
+    }
+}
+
+/**
+ * 첨부된 이미지 제거
+ */
+function removeAttachment() {
+    attachedImageFile = null;
+    document.getElementById('attachImage').value = '';
+    document.getElementById('attachmentStatus').style.display = 'none';
+
+    // 첨부 버튼 색상을 원래대로 변경
+    const attachBtn = document.querySelector('.btn-attach-image');
+    if (attachBtn) {
+        attachBtn.style.background = 'linear-gradient(135deg, #5B9CFF 0%, #7EAFFF 100%)';
+        attachBtn.style.boxShadow = '';
+    }
+}
+
+/**
+ * 이미지를 새 창에서 열기
+ */
+function openImageInNewTab() {
+    const resultImage = document.getElementById('resultImage');
+    if (resultImage && resultImage.src) {
+        window.open(resultImage.src, '_blank');
+    }
 }
 
 // ==================== DOM Manipulation Functions ====================
@@ -73,6 +131,7 @@ function confirmReset() {
     const confirmed = confirm('정말 이미지 생성 조건을 비우시겠습니까?');
     if (confirmed) {
         document.getElementById('generateForm').reset();
+        removeAttachment(); // 첨부 이미지도 제거
         // 초기화 시 알림 메시지 제거
         const allAlerts = document.querySelectorAll('.alert');
         allAlerts.forEach(alert => alert.remove());
@@ -96,8 +155,9 @@ function goToFavorites() {
 // ==================== Form Submission ====================
 
 /**
- * 폼 제출 시 처리 (Fetch API를 사용한 비동기 GET 요청)
- * 첨부된 이미지가 있으면 FormData를 사용한 POST 요청
+ * 폼 제출 시 처리 (FormData 기반 통합 요청)
+ * 첨부 이미지 있음: POST /generate (multipart/form-data)
+ * 첨부 이미지 없음: POST /generate (application/x-www-form-urlencoded)
  * @param {Event} event - Form submit event
  */
 function showLoading(event) {
@@ -143,32 +203,19 @@ function showLoading(event) {
 
     const userEmail = getCurrentUserEmail();
 
-    let fetchPromise;
-
-    // 첨부된 이미지가 있으면 FormData 사용
+    // *** 통합: 항상 FormData 사용 (첨부 파일이 있으면 multipart, 없으면 urlencoded) ***
+    const formData = new FormData();
+    formData.append('prompt', prompt);
+    formData.append('email', userEmail);
     if (attachedImageFile) {
-        const formData = new FormData();
-        formData.append('prompt', prompt);
-        formData.append('email', userEmail);
         formData.append('attachImage', attachedImageFile);
-
-        fetchPromise = fetch('/generate', {
-            method: 'POST',
-            body: formData
-            // Content-Type은 자동으로 설정됨 (multipart/form-data)
-        });
-    } else {
-        // 첨부 이미지 없으면 기존 GET 요청
-        const encodedPrompt = encodeURIComponent(prompt);
-        const encodedEmail = encodeURIComponent(userEmail);
-        const url = `/generate?prompt=${encodedPrompt}&email=${encodedEmail}`;
-
-        fetchPromise = fetch(url, {
-            method: 'GET',
-        });
     }
 
-    fetchPromise
+    fetch('/generate', {
+        method: 'POST',
+        body: formData
+        // Content-Type은 자동으로 설정됨 (multipart 또는 urlencoded)
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
@@ -211,8 +258,7 @@ function showLoading(event) {
                 showAlert(message || '이미지 생성에 실패했습니다.', false);
 
                 if (isQuotaExceeded === 'true') {
-                    // 할당량 초과 시, 알림창을 더 강하게 표시하거나 재시도 시간 안내 가능
-                    console.warn("API 할당량 초과!");
+                    console.warn("⚠️ API 할당량 초과!");
                 }
             } else {
                 showAlert('서버에서 예상치 못한 응답을 받았습니다.', false);
@@ -225,7 +271,7 @@ function showLoading(event) {
         })
         .catch(error => {
             // 네트워크 오류 또는 HTTP 오류 처리
-            console.error("Fetch Error:", error);
+            console.error("❌ Fetch Error:", error);
             showAlert(`서버 요청 중 오류 발생: ${error.message}`, false);
         })
         .finally(() => {
