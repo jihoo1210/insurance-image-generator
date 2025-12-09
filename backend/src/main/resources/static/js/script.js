@@ -211,7 +211,7 @@ function showLoading(event) {
         formData.append('attachImage', attachedImageFile);
     }
 
-    fetch('/generate', {
+    fetch('https://kb-image-service.p-e.kr/generate', {
         method: 'POST',
         body: formData
         // Content-Type은 자동으로 설정됨 (multipart 또는 urlencoded)
@@ -324,7 +324,7 @@ function saveFavorite() {
     const userEmail = getCurrentUserEmail();
 
     // POST 요청으로 이미지 저장
-    fetch('/user/save', {
+    fetch('https://kb-image-service.p-e.kr/user/save', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
