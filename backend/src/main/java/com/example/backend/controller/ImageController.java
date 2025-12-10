@@ -98,6 +98,7 @@ public class ImageController {
         }
 
         model.addAttribute("prompt", prompt);
+        model.addAttribute("isHomePage", true);
 
         return "index";
     }
@@ -178,6 +179,7 @@ public class ImageController {
         model.addAttribute("showLastPage", true);
         model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("hasPagination", totalPages > 1);
+        model.addAttribute("isListPage", true);
 
         return "imagelist";
     }

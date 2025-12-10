@@ -4,24 +4,30 @@
         <div class="flex items-center justify-between h-16 md:h-20">
             <!-- 좌측: 네비게이션 -->
             <div class="flex items-center gap-2 md:gap-3">
+                {{^isHomePage}}
                 <a href="/" class="btn-hover inline-flex items-center justify-center gap-2 bg-warm-600 hover:bg-warm-500 text-white w-10 h-10 md:w-28 md:h-10 rounded-lg text-sm font-medium shadow-md">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     <span class="hidden md:inline">홈으로</span>
                 </a>
+                {{/isHomePage}}
+                {{^isListPage}}
                 <a href="/list" class="btn-hover inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white w-10 h-10 md:w-28 md:h-10 rounded-lg text-sm font-medium shadow-md">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                     </svg>
                     <span class="hidden md:inline">전체보기</span>
                 </a>
+                {{/isListPage}}
+                {{^isFavoritesPage}}
                 <button type="button" id="favoritesBtn" onclick="goToFavorites()" class="btn-hover inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white w-10 h-10 md:w-28 md:h-10 rounded-lg text-sm font-medium shadow-md">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>
                     <span class="hidden md:inline">즐겨찾기</span>
                 </button>
+                {{/isFavoritesPage}}
             </div>
 
             <!-- 중앙: 제목 -->

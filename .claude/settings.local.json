@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(git checkout:*)",
+      "Bash(mvnw.cmd clean compile:*)",
+      "Bash(./mvnw.cmd clean compile:*)",
+      "Bash(gradlew.bat clean:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew test:*)",
+      "Bash(aws s3 ls:*)",
+      "Bash(./gradlew.bat build:*)",
+      "Bash(timeout 40 ./gradlew.bat:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout 45 ./gradlew.bat bootRun:*)",
+      "Bash(timeout 50 ./gradlew.bat bootRun:*)",
+      "Bash(./gradlew.bat clean build -x test)",
+      "Bash(.gradlew.bat clean build:*)",
+      "Bash(./gradlew.bat:*)",
+      "Bash(git add:*)",
+      "Bash(git restore:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nUI 개선 및 페이지네이션 리팩토링\n\n- Spring Pageable을 사용한 페이지네이션 개선\n- 이미지 업로드 미리보기 기능 추가\n- 업로드 성공 상태 UI 피드백 개선\n- 데이터 손실 방지를 위한 SQL 초기화 비활성화\n- 테스트/mock 관련 설정 제거\n- AuthHelper 유틸 클래스 추가로 중복 코드 제거\n- 이미지 그리드 중복 렌더링 버그 수정\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git merge:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(findstr:*)",
+      "Bash(cat:*)",
+      "Bash(git reset:*)",
+      "Bash(backend/gradlew.bat:*)"
+    ]
+  }
+}

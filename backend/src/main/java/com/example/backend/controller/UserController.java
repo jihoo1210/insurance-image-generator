@@ -38,6 +38,7 @@ public class UserController {
         List<ImageListResponse> favorites = userService.getUserFavorites(email);
         model.addAttribute("images", favorites);
         model.addAttribute("pageTitle", "내 즐겨찾기");
+        model.addAttribute("isFavoritesPage", true);
 
         return "favorites";
     }
