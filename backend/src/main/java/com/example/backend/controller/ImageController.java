@@ -121,7 +121,7 @@ public class ImageController {
 
                 return ResponseEntity.ok()
                         .header("Content-Type", "image/png")
-                        .header("Content-Disposition", "inline; filename=\"" + s3Key + "\"")
+                        .header("Content-Disposition", "attachment; filename=\"" + s3Key + "\"")
                         .body(imageData);
             }
 

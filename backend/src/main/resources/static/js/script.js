@@ -336,6 +336,7 @@ function showLoading(event) {
             // 이 데이터들은 Mustache가 렌더링 시 body 태그에 data-속성으로 넣어준 값입니다.
             const success = body.getAttribute('data-success');
             const imageUrl = body.getAttribute('data-image-url');
+            const s3Key = body.getAttribute('data-s3-key');
             const message = body.getAttribute('data-message');
             const isQuotaExceeded = body.getAttribute('data-is-quota-exceeded');
             const promptValue = doc.getElementById('prompt') ? doc.getElementById('prompt').value : '';
@@ -350,7 +351,8 @@ function showLoading(event) {
             if (success === 'true' && imageUrl && resultImage && downloadBtn && resultDiv) {
                 // 성공
                 resultImage.src = imageUrl;
-                downloadBtn.href = imageUrl;
+                resultImage.setAttribute('data-s3-key', s3Key);
+                downloadBtn.href = '/download/' + s3Key;
                 resultDiv.style.display = 'block';
             } else if (success === 'false') {
                 // 실패 (서버에서 success=false로 응답한 경우)
@@ -499,14 +501,12 @@ window.addEventListener('load', function() {
 
             if (resultImage && downloadBtn) {
                 resultImage.src = imageUrl;
-                // *** 중요: s3Key도 data 속성에 설정 ***
                 if (s3Key) {
                     resultImage.setAttribute('data-s3-key', s3Key);
+                    downloadBtn.href = '/download/' + s3Key;
                 }
-                downloadBtn.href = imageUrl;
                 if (resultDiv) resultDiv.style.display = 'block';
                 if (generateForm) generateForm.style.display = 'block';
-                // *** 성공 메시지 알림 제거 ***
             }
         } catch (e) {
             console.error('이전 결과 복원 중 오류:', e);

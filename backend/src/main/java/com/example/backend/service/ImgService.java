@@ -85,11 +85,13 @@ public class ImgService {
             log.debug("S3 저장 시작 - 파일명: {}, 크기: {} bytes", fileName, fileContent.length);
 
             String s3Key = UUID.randomUUID() + "_" + fileName;
+            String contentType = getContentType(fileName);
 
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(s3Key)
                     .contentLength((long) fileContent.length)
+                    .contentType(contentType)
                     .build();
 
             s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromInputStream(
@@ -432,5 +434,20 @@ public class ImgService {
                 .creatorEmail(image.getCreatorEmail())
                 .isFavorited(isFavorited)
                 .build();
+    }
+
+    /**
+     * 파일명에서 Content-Type 추출
+     */
+    private String getContentType(String fileName) {
+        if (fileName == null) return "application/octet-stream";
+
+        String lowerName = fileName.toLowerCase();
+        if (lowerName.endsWith(".png")) return "image/png";
+        if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) return "image/jpeg";
+        if (lowerName.endsWith(".webp")) return "image/webp";
+        if (lowerName.endsWith(".gif")) return "image/gif";
+
+        return "image/png"; // 기본값
     }
 }
