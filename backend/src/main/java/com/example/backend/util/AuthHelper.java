@@ -27,11 +27,10 @@ public class AuthHelper {
             return;
         }
 
-        if (!(authentication.getPrincipal() instanceof OAuth2User)) {
+        if (!(authentication.getPrincipal() instanceof OAuth2User oauth2User)) {
             return;
         }
 
-        OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
         String email = oauth2User.getAttribute("email");
 
         if (email == null || email.trim().isEmpty()) {

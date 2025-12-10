@@ -25,6 +25,7 @@ public class MainController {
     @GetMapping("/")
     public String index(Model model) {
         authHelper.checkLogin(model);
+        model.addAttribute("message", "보험 이미지 생성 서비스에 오신 것을 환영합니다!");
         model.addAttribute("isHomePage", true);
         return "index";
     }
