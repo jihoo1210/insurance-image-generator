@@ -180,48 +180,11 @@ function setGenerateButtonState(enabled) {
 }
 
 /**
- * 토스트 알림 메시지 표시
+ * 알림 메시지 표시
  * @param {string} message - 표시할 메시지
- * @param {boolean} success - 성공 여부
  */
-function showAlert(message, success) {
-    // 토스트 컨테이너 찾기 또는 생성
-    let container = document.getElementById('toastContainer') || document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toastContainer';
-        container.style.cssText = 'position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px;';
-        document.body.appendChild(container);
-    }
-
-    // 토스트 요소 생성
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        padding: 16px 24px;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        animation: slideDown 0.3s ease-out;
-        ${success
-            ? 'background: linear-gradient(135deg, #10b981, #059669); color: white;'
-            : 'background: linear-gradient(135deg, #ef4444, #dc2626); color: white;'
-        }
-    `;
-
-    const icon = success
-        ? '<svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
-        : '<svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
-
-    toast.innerHTML = `${icon}<span style="font-size: 14px; font-weight: 500;">${message}</span>`;
-    container.appendChild(toast);
-
-    // 3초 후 제거
-    setTimeout(() => {
-        toast.style.animation = 'slideUp 0.3s ease-out forwards';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+function showAlert(message) {
+    window.alert(message);
 }
 
 /**
