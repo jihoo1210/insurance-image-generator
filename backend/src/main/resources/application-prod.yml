@@ -7,10 +7,15 @@ spring:
     username: ${RDS_USERNAME}
     password: ${RDS_PASSWORD}
 
+  # data.sql 실행 방지 (운영 환경에서는 초기화 스크립트 실행 안 함)
+  sql:
+    init:
+      mode: never
+
   # jpa config
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
 
   # OAuth2 설정
   security:
@@ -25,11 +30,6 @@ spring:
               - profile
               - email
             redirect-uri: "https://kb-image-service.p-e.kr/login/oauth2/code/google"
-
-# 애플리케이션 설정
-app:
-  # 테스트 모드 활성화 (true: API 호출 없이 더미 데이터 사용)
-  mock-mode: false
 
 aws:
   s3:

@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.springframework.data.domain.Pageable;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -20,11 +21,18 @@ public class SimpleImgServiceTest {
         System.out.println("\n✅ [테스트 1] ImgService 메서드 존재 확인");
 
         try {
-            // generateImage 메서드 존재 확인
-            ImgService.class.getMethod("generateImage", String.class);
+            // generateImage 메서드 존재 확인 (prompt, creatorEmail)
             ImgService.class.getMethod("generateImage", String.class, String.class);
-            System.out.println("  ✓ generateImage(String) 메서드 존재");
             System.out.println("  ✓ generateImage(String, String) 메서드 존재");
+
+            // generateS3Url 메서드 존재 확인
+            ImgService.class.getMethod("generateS3Url", String.class);
+            System.out.println("  ✓ generateS3Url(String) 메서드 존재");
+
+            // getPagedImages 메서드 존재 확인 (Pageable 사용)
+            ImgService.class.getMethod("getPagedImages", Pageable.class, String.class);
+            System.out.println("  ✓ getPagedImages(Pageable, String) 메서드 존재");
+
             assertTrue(true);
         } catch (NoSuchMethodException e) {
             fail("메서드 찾기 실패: " + e.getMessage());

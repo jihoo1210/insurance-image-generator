@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: backend-test
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+            scope:
+              - openid
+              - profile
+              - email
+
+app:
+  mock-mode: true
+
+aws:
+  s3:
+    bucket-name: test-bucket
+  region: ap-northeast-2
+  access-key-id: test-access-key
+  secret-key-id: test-secret-key
+
+google:
+  api:
+    key: test-api-key
+
+server:
+  port: 8080

@@ -1,4 +1,4 @@
-package com.example.backend.dto;
+package com.example.backend.repository;
 
 import com.example.backend.entity.Image;
 import com.example.backend.entity.User;

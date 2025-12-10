@@ -48,10 +48,44 @@ function handleImageAttachment(event) {
 
     const statusDiv = document.getElementById('attachmentStatus');
     const fileNameSpan = document.getElementById('attachmentFileName');
+    const imagePreview = document.getElementById('imagePreview');
     const attachBtn = document.querySelector('.btn-attach-image');
 
+    // 이미지 미리보기 생성
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (imagePreview) {
+            imagePreview.src = e.target.result;
+        }
+    };
+    reader.readAsDataURL(file);
+
     fileNameSpan.textContent = `📎 ${file.name}`;
-    statusDiv.style.display = 'flex';
+    statusDiv.classList.remove('hidden');
+
+    // 업로드 버튼 텍스트 변경
+    const uploadIcon = document.getElementById('uploadIcon');
+    const uploadText = document.getElementById('uploadText');
+    const uploadHint = document.getElementById('uploadHint');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    if (uploadIcon) {
+        uploadIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+        uploadIcon.classList.remove('text-warm-400');
+        uploadIcon.classList.add('text-green-500');
+    }
+    if (uploadText) {
+        uploadText.textContent = '업로드 성공! (클릭하여 변경)';
+        uploadText.classList.remove('text-warm-600');
+        uploadText.classList.add('text-green-600');
+    }
+    if (uploadHint) {
+        uploadHint.textContent = '다른 이미지로 변경할 수 있습니다';
+    }
+    if (uploadBtn) {
+        uploadBtn.classList.remove('border-warm-300');
+        uploadBtn.classList.add('border-green-300', 'bg-green-50');
+    }
 
     // 첨부 버튼 색상을 진하게 변경
     if (attachBtn) {
@@ -66,7 +100,37 @@ function handleImageAttachment(event) {
 function removeAttachment() {
     attachedImageFile = null;
     document.getElementById('attachImage').value = '';
-    document.getElementById('attachmentStatus').style.display = 'none';
+    document.getElementById('attachmentStatus').classList.add('hidden');
+
+    // 미리보기 이미지 초기화
+    const imagePreview = document.getElementById('imagePreview');
+    if (imagePreview) {
+        imagePreview.src = '';
+    }
+
+    // 업로드 버튼 원래 상태로 복원
+    const uploadIcon = document.getElementById('uploadIcon');
+    const uploadText = document.getElementById('uploadText');
+    const uploadHint = document.getElementById('uploadHint');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    if (uploadIcon) {
+        uploadIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>';
+        uploadIcon.classList.remove('text-green-500');
+        uploadIcon.classList.add('text-warm-400');
+    }
+    if (uploadText) {
+        uploadText.textContent = '이미지를 드래그하거나 클릭하여 업로드';
+        uploadText.classList.remove('text-green-600');
+        uploadText.classList.add('text-warm-600');
+    }
+    if (uploadHint) {
+        uploadHint.textContent = 'PNG, JPG, WEBP (최대 10MB)';
+    }
+    if (uploadBtn) {
+        uploadBtn.classList.remove('border-green-300', 'bg-green-50');
+        uploadBtn.classList.add('border-warm-300');
+    }
 
     // 첨부 버튼 색상을 원래대로 변경
     const attachBtn = document.querySelector('.btn-attach-image');
@@ -116,12 +180,48 @@ function setGenerateButtonState(enabled) {
 }
 
 /**
- * 알림 메시지 표시
+ * 토스트 알림 메시지 표시
  * @param {string} message - 표시할 메시지
- * @param {boolean} success - 성공 여부 (사용되지 않음)
+ * @param {boolean} success - 성공 여부
  */
 function showAlert(message, success) {
-    alert(message);
+    // 토스트 컨테이너 찾기 또는 생성
+    let container = document.getElementById('toastContainer') || document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.style.cssText = 'position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px;';
+        document.body.appendChild(container);
+    }
+
+    // 토스트 요소 생성
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideDown 0.3s ease-out;
+        ${success
+            ? 'background: linear-gradient(135deg, #10b981, #059669); color: white;'
+            : 'background: linear-gradient(135deg, #ef4444, #dc2626); color: white;'
+        }
+    `;
+
+    const icon = success
+        ? '<svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
+        : '<svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+
+    toast.innerHTML = `${icon}<span style="font-size: 14px; font-weight: 500;">${message}</span>`;
+    container.appendChild(toast);
+
+    // 3초 후 제거
+    setTimeout(() => {
+        toast.style.animation = 'slideUp 0.3s ease-out forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 /**
@@ -211,10 +311,9 @@ function showLoading(event) {
         formData.append('attachImage', attachedImageFile);
     }
 
-    fetch('https://kb-image-service.p-e.kr/generate', {
+    fetch('/generate', {
         method: 'POST',
         body: formData
-        // Content-Type은 자동으로 설정됨 (multipart 또는 urlencoded)
     })
         .then(response => {
             if (!response.ok) {
@@ -323,8 +422,7 @@ function saveFavorite() {
 
     const userEmail = getCurrentUserEmail();
 
-    // POST 요청으로 이미지 저장
-    fetch('https://kb-image-service.p-e.kr/user/save', {
+    fetch('/user/save', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

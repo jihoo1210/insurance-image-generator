@@ -2,121 +2,291 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>KB 손해보험 김포 한강 지점 이미지 서비스</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>KB 손해보험 이미지 서비스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        warm: {
+                            50: '#faf7f2',
+                            100: '#f5efe6',
+                            200: '#e8dfd0',
+                            300: '#d9ccb8',
+                            400: '#c4ad8f',
+                            500: '#a68b5b',
+                            600: '#8b7355',
+                            700: '#6d5a45',
+                            800: '#5a4a3a',
+                            900: '#3d342a',
+                        },
+                        accent: {
+                            DEFAULT: '#d4a574',
+                            hover: '#c4955f',
+                            light: '#e8c9a8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin { animation: spin 1s linear infinite; }
+
+        .btn-hover { transition: all 0.2s ease; }
+        .btn-hover:hover { transform: translateY(-2px); }
+        .btn-hover:active { transform: translateY(0); }
+
+        /* 토스트 알림 */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+    </style>
 </head>
-<body {{#success}}data-success="{{success}}" data-image-url="{{imageUrl}}" data-s3-key="{{s3Key}}" {{/success}}data-message="{{message}}" {{#isQuotaExceeded}}data-is-quota-exceeded="{{isQuotaExceeded}}"{{/isQuotaExceeded}}>
-    <div class="container">
+<body class="bg-gradient-to-br from-warm-50 via-warm-100 to-warm-200 min-h-screen"
+      {{#success}}data-success="{{success}}" data-image-url="{{imageUrl}}" data-s3-key="{{s3Key}}"{{/success}}
+      data-message="{{message}}"
+      {{#isQuotaExceeded}}data-is-quota-exceeded="{{isQuotaExceeded}}"{{/isQuotaExceeded}}>
+
+    <div class="min-h-screen flex flex-col">
         <!-- 헤더 -->
-        <div class="header">
-            <!-- 좌측: 전체 보기 & 즐겨찾기 버튼 -->
-            <div class="header-left">
-                <button id="viewAllBtn" onclick="window.location.href='/list'" class="btn-view-all-left">
-                    📚 전체보기
-                </button>
-                <button type="button" id="favoritesBtn" onclick="goToFavorites()" class="btn-favorites-left">
-                    ❤️ 즐겨찾기
-                </button>
-            </div>
+        <header class="bg-gradient-to-r from-warm-800 to-warm-900 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16 md:h-20">
+                    <!-- 좌측: 네비게이션 -->
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <a href="/list" class="btn-hover inline-flex items-center justify-center gap-2 bg-warm-600 hover:bg-warm-500 text-white w-10 h-10 md:w-28 md:h-10 rounded-lg text-sm font-medium shadow-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                            <span class="hidden md:inline">전체보기</span>
+                        </a>
+                        <button type="button" id="favoritesBtn" onclick="goToFavorites()" class="btn-hover inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white w-10 h-10 md:w-28 md:h-10 rounded-lg text-sm font-medium shadow-md">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            <span class="hidden md:inline">즐겨찾기</span>
+                        </button>
+                    </div>
 
-            <!-- 중앙: 제목 -->
-            <div class="header-content">
-                <h1>KB 손해보험 김포 한강 지점 이미지 서비스</h1>
-                <p>{{message}}</p>
-            </div>
+                    <!-- 중앙: 로고 -->
+                    <div class="flex-1 text-center px-4">
+                        <h1 class="text-lg md:text-2xl font-bold text-accent">KB 손해보험</h1>
+                        <p class="text-warm-300 text-xs md:text-sm hidden sm:block">김포 한강 지점 이미지 서비스</p>
+                    </div>
 
-            <!-- 우측: 사용자 정보 & 로그인 -->
-            <div class="header-top">
-                {{#User}}
-                <div class="user-info">
-                    <span class="user-email">{{User.email}}</span>
-                    <a href="/auth/logout" class="btn-logout">로그아웃</a>
+                    <!-- 우측: 로그인 -->
+                    <div class="flex items-center">
+                        {{#User}}
+                        <div class="flex items-center gap-2 md:gap-3 bg-warm-700/50 rounded-full px-3 py-1.5 md:px-4 md:py-2">
+                            <span class="user-email text-accent text-sm font-medium truncate max-w-[100px] md:max-w-[150px]">{{User.email}}</span>
+                            <a href="/auth/logout" class="btn-hover bg-red-500 hover:bg-red-600 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs font-medium">
+                                로그아웃
+                            </a>
+                        </div>
+                        {{/User}}
+                        {{^User}}
+                        <a href="/oauth2/authorization/google" class="btn-hover inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 w-10 h-10 md:w-28 md:h-10 rounded-lg text-sm font-medium shadow-md">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            <span class="hidden md:inline">로그인</span>
+                        </a>
+                        {{/User}}
+                    </div>
                 </div>
-                {{/User}}
-                {{^User}}
-                <a href="/oauth2/authorization/google" class="btn-login-google">
-                    <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Google 로그인
-                </a>
-                {{/User}}
             </div>
-        </div>
+        </header>
 
         <!-- 메인 콘텐츠 -->
-        <div class="content">
-            <!-- 로딩 표시 -->
-            <div class="loading" id="loadingDiv">
-                <div class="spinner"></div>
-                <p>이미지를 생성 중입니다. 잠깐만 기다려주세요...</p>
-            </div>
-            <div id="resultDiv" style="display: none;">
-                <div class="image-container">
-                    <img id="resultImage" alt="생성된 이미지" data-s3-key="" onclick="openImageInNewTab()" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); margin-bottom: 20px; cursor: pointer;" title="클릭하면 새 창에서 열립니다" />
-                    <div class="image-actions">
-                        <a id="downloadBtn" download class="btn-download" target="_blank">
-                            ⬇️ 다운로드
-                        </a>
-                        <button type="button" class="btn-save-favorite" onclick="saveFavorite()">
-                            ❤️ 즐겨찾기에 저장
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- 이미지 생성 폼 -->
-            <form id="generateForm" action="/generate" method="get" onsubmit="showLoading(event)" style="width: 100%;">
-                <!-- 이미지 첨부 -->
-                <div class="form-group">
-                    <label for="attachImage">
-                        🖼️ 이미지 첨부 (선택사항)
-                    </label>
-                    <div class="image-attachment-container">
-                        <input type="file" id="attachImage" name="attachImage" accept="image/*" style="display: none;" onchange="handleImageAttachment(event)">
-                        <button type="button" class="btn-attach-image" onclick="document.getElementById('attachImage').click()">
-                            📎 이미지 첨부
-                        </button>
-                        <div id="attachmentStatus" class="attachment-status" style="display: none;">
-                            <span id="attachmentFileName"></span>
-                            <button type="button" class="btn-remove-attachment" onclick="removeAttachment()">✕</button>
+        <main class="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-2xl mx-auto">
+                <!-- 공지사항: 데이터 복구 안내 -->
+                <div class="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-amber-800 mb-1">서비스 복구 안내</h3>
+                            <p class="text-amber-700 text-sm leading-relaxed">
+                                서버 점검 과정에서 일부 이미지 데이터가 손실되었습니다.
+                                현재 백업 데이터를 기반으로 복구를 완료하였으나, 일부 최근 생성된 이미지는 복구되지 않았을 수 있습니다.
+                                불편을 드려 진심으로 사과드립니다.
+                            </p>
                         </div>
                     </div>
-                    <small style="color: #888; margin-top: 8px; display: block;">
-                        💡 첨부된 이미지를 기반으로 이미지를 생성합니다.
-                    </small>
                 </div>
 
-                <!-- 프롬프트 입력 -->
-                <div class="form-group">
-                    <label for="prompt">
-                        🎯 이미지 생성 조건 <span style="color: red;">*</span>
-                    </label>
-                    <textarea
-                        id="prompt"
-                        name="prompt"
-                        placeholder="힌트: 이미지에 필요한 속성(사이즈 등)과 필요한 내용을 구체적으로 작성해주세요."
-                        required>{{#prompt}}{{prompt}}{{/prompt}}</textarea>
+                <!-- 로딩 상태 -->
+                <div id="loadingDiv" class="hidden">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center animate-fadeIn">
+                        <div class="w-16 h-16 border-4 border-warm-200 border-t-accent rounded-full animate-spin mx-auto mb-6"></div>
+                        <h3 class="text-xl font-semibold text-warm-800 mb-2">이미지 생성 중...</h3>
+                        <p class="text-warm-600">AI가 멋진 이미지를 만들고 있습니다. 잠시만 기다려주세요.</p>
+                    </div>
                 </div>
 
-
-                <!-- 버튼 그룹 -->
-                <div class="button-group">
-                    <button type="button" class="btn-generate" onclick="document.getElementById('generateForm').dispatchEvent(new Event('submit'))">
-                        ✨ 이미지 생성
-                    </button>
-                    <button type="button" class="btn-reset" onclick="confirmReset()">
-                        🔄 초기화
-                    </button>
+                <!-- 결과 표시 -->
+                <div id="resultDiv" class="hidden mb-8 animate-fadeIn">
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                        <div class="relative group cursor-pointer" onclick="openImageInNewTab()">
+                            <img id="resultImage" alt="생성된 이미지" data-s3-key=""
+                                 class="w-full h-auto object-contain bg-warm-100" />
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                <span class="opacity-0 group-hover:opacity-100 transition-opacity text-white bg-black/50 px-4 py-2 rounded-lg text-sm">
+                                    클릭하여 원본 보기
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <a id="downloadBtn" download target="_blank"
+                                   class="btn-hover flex-1 inline-flex items-center justify-center gap-2 bg-warm-800 hover:bg-warm-900 text-accent px-6 py-3 rounded-xl font-semibold shadow-lg">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    다운로드
+                                </a>
+                                <button type="button" onclick="saveFavorite()"
+                                        class="btn-hover flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                    즐겨찾기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </form>
-        </div>
+
+                <!-- 이미지 생성 폼 -->
+                <form id="generateForm" action="/generate" method="post" enctype="multipart/form-data" onsubmit="showLoading(event)">
+                    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                        <h2 class="text-2xl font-bold text-warm-800 mb-6 text-center">
+                            AI 이미지 생성
+                        </h2>
+
+                        <!-- 이미지 첨부 -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-semibold text-warm-700 mb-3">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                참고 이미지 (선택사항)
+                            </label>
+                            <input type="file" id="attachImage" name="attachImage" accept="image/*" class="hidden" onchange="handleImageAttachment(event)">
+                            <button type="button" id="uploadBtn" onclick="document.getElementById('attachImage').click()"
+                                    class="btn-hover w-full border-2 border-dashed border-warm-300 hover:border-accent rounded-xl p-6 text-center transition-colors group">
+                                <svg id="uploadIcon" class="w-10 h-10 mx-auto text-warm-400 group-hover:text-accent mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                </svg>
+                                <span id="uploadText" class="text-warm-600 group-hover:text-accent font-medium">이미지를 드래그하거나 클릭하여 업로드</span>
+                                <span id="uploadHint" class="block text-warm-400 text-sm mt-1">PNG, JPG, WEBP (최대 10MB)</span>
+                            </button>
+                            <div id="attachmentStatus" class="hidden mt-3 bg-accent/10 border border-accent/30 rounded-xl p-4">
+                                <!-- 미리보기 이미지 -->
+                                <div class="mb-3">
+                                    <img id="imagePreview" src="" alt="미리보기" class="w-full max-h-48 object-contain rounded-lg bg-warm-100" />
+                                </div>
+                                <!-- 파일 정보 -->
+                                <div class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                    </svg>
+                                    <span id="attachmentFileName" class="flex-1 text-warm-700 font-medium truncate"></span>
+                                    <button type="button" onclick="removeAttachment()" class="btn-hover w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 프롬프트 입력 -->
+                        <div class="mb-6">
+                            <label for="prompt" class="block text-sm font-semibold text-warm-700 mb-3">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                                이미지 생성 조건 <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="prompt" name="prompt" required rows="5"
+                                      placeholder="예: 가족이 함께 있는 따뜻한 분위기의 보험 광고 이미지, 안전과 신뢰를 강조하는 느낌으로..."
+                                      class="w-full px-4 py-3 border-2 border-warm-200 rounded-xl focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all resize-none text-warm-800 placeholder-warm-400">{{#prompt}}{{prompt}}{{/prompt}}</textarea>
+                            <p class="text-warm-500 text-sm mt-2">
+                                💡 구체적인 설명일수록 더 정확한 이미지가 생성됩니다.
+                            </p>
+                        </div>
+
+                        <!-- 버튼 그룹 -->
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button type="submit" class="btn-hover flex-1 bg-gradient-to-r from-accent to-accent-hover hover:from-accent-hover hover:to-accent text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg shadow-accent/30">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                                </svg>
+                                이미지 생성
+                            </button>
+                            <button type="button" onclick="confirmReset()" class="btn-hover sm:w-auto bg-warm-200 hover:bg-warm-300 text-warm-700 px-6 py-4 rounded-xl font-semibold">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                초기화
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- 안내 메시지 -->
+                <div class="mt-8 text-center text-warm-500 text-sm">
+                    <p>KB 손해보험 김포 한강 지점 전용 이미지 생성 서비스입니다.</p>
+                    <p class="mt-1">생성된 이미지는 마케팅 및 홍보 목적으로 사용할 수 있습니다.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- 푸터 -->
+        <footer class="bg-warm-800 text-warm-400 py-4">
+            <div class="max-w-7xl mx-auto px-4 text-center text-sm">
+                <p>&copy; 2024 KB 손해보험 김포 한강 지점. Powered by Google Gemini AI.</p>
+            </div>
+        </footer>
     </div>
+
+    <!-- 토스트 컨테이너 -->
+    <div id="toastContainer"></div>
 
     <script src="/js/script.js"></script>
 </body>

@@ -3,6 +3,9 @@ package com.example.backend.service;
 import com.example.backend.dto.ImageListResponse;
 import com.example.backend.entity.Image;
 import com.example.backend.repository.ImageRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.google.common.collect.ImmutableList;
 import com.google.genai.Client;
 import com.google.genai.errors.ApiException;
@@ -19,12 +22,9 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
-import java.time.Duration;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
+import java.time.Duration;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,9 +53,6 @@ public class ImgService {
 
     @Value("${aws.region}")
     private String awsRegion;
-
-    @Value("${app.mock-mode:false}")
-    private boolean mockMode;
 
     private final String API_ROLE = "당신은 KB 손해보험 홍보 이미지 제작 전문가입니다. "
             + "사용자가 첨부한 이미지와 요청을 기반으로 새로운 이미지를 생성해야 합니다. "
@@ -100,11 +97,10 @@ public class ImgService {
                     fileContent.length
             ));
 
-            log.info("✅ S3에 파일 저장 완료: {}", s3Key);
+            log.info("S3에 파일 저장 완료: {}", s3Key);
             return s3Key;
         } catch (Exception e) {
-            log.error("❌ S3 파일 저장 중 오류: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("S3 파일 저장 중 오류: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -133,12 +129,11 @@ public class ImgService {
             PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
             String presignedUrl = presignedRequest.url().toString();
 
-            log.info("✅ S3 Presigned URL 생성 완료: {}", presignedUrl);
+            log.debug("S3 Presigned URL 생성 완료");
             return presignedUrl;
 
         } catch (Exception e) {
-            log.error("❌ S3 Presigned URL 생성 중 오류: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("S3 Presigned URL 생성 중 오류: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -213,12 +208,7 @@ public class ImgService {
             handleApiException(e);
             return null;
         } catch (Exception e) {
-            log.error("═══════════════════════════════════════════════════════════");
-            log.error("❌ [예상치 못한 오류]");
-            log.error("오류 클래스: {}", e.getClass().getName());
-            log.error("오류 메시지: {}", e.getMessage());
-            e.printStackTrace();
-            log.error("═══════════════════════════════════════════════════════════");
+            log.error("이미지 생성 중 예상치 못한 오류: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -242,9 +232,7 @@ public class ImgService {
         try {
             String model = "gemini-3-pro-image-preview";
 
-            // 첨부된 이미지를 Base64로 인코딩
             byte[] imageBytes = attachImage.getBytes();
-            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
             String mimeType = attachImage.getContentType() != null ? attachImage.getContentType() : "image/jpeg";
 
             // 이미지 + 텍스트 프롬프트 결합
@@ -288,16 +276,10 @@ public class ImgService {
             handleApiException(e);
             return null;
         } catch (IOException e) {
-            log.error("첨부 파일 처리 중 오류: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("첨부 파일 처리 중 오류: {}", e.getMessage(), e);
             return null;
         } catch (Exception e) {
-            log.error("═══════════════════════════════════════════════════════════");
-            log.error("❌ [예상치 못한 오류]");
-            log.error("오류 클래스: {}", e.getClass().getName());
-            log.error("오류 메시지: {}", e.getMessage());
-            e.printStackTrace();
-            log.error("═══════════════════════════════════════════════════════════");
+            log.error("이미지 생성 중 예상치 못한 오류: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -316,60 +298,39 @@ public class ImgService {
      */
     private String processResponse(GenerateContentResponse response) {
         try {
-            log.debug("응답 구조 검증 시작");
-
-            // candidates 확인
             if (response.candidates() == null || response.candidates().isEmpty()) {
-                log.error("❌ candidates가 없음");
+                log.error("응답에 candidates가 없음");
                 return null;
             }
 
             var candidates = response.candidates().get();
-            log.info("  후보(candidates) 개수: {}", candidates.size());
-
             if (candidates.isEmpty()) {
-                log.error("❌ candidates 리스트가 비어있음");
+                log.error("candidates 리스트가 비어있음");
                 return null;
             }
 
-            // 첫 번째 candidate 처리
             var candidate = candidates.get(0);
-            log.debug("  첫 번째 후보 선택");
-
-            // content 확인
             if (candidate.content() == null || candidate.content().isEmpty()) {
-                log.error("❌ content가 없음");
+                log.error("응답에 content가 없음");
                 return null;
             }
 
             var content = candidate.content().get();
-            log.debug("  content 추출 완료");
-
-            // parts 확인
             if (content.parts() == null || content.parts().isEmpty()) {
-                log.error("❌ parts가 없음");
+                log.error("응답에 parts가 없음");
                 return null;
             }
 
             var parts = content.parts().get();
-            log.info("  파트(parts) 개수: {}", parts.size());
+            log.debug("응답 파트 개수: {}", parts.size());
 
-            // 각 파트 처리
-            for (int i = 0; i < parts.size(); i++) {
-                Part part = parts.get(i);
-
-                // 이미지 데이터 확인
+            for (Part part : parts) {
                 if (part.inlineData() != null && part.inlineData().isPresent()) {
-                    log.info("  ✓ 이미지 데이터 발견!");
-
                     Blob blob = part.inlineData().get();
 
-                    // MIME 타입 확인
                     String fileExtension = ".png";
                     if (blob.mimeType() != null && blob.mimeType().isPresent()) {
                         String mimeType = blob.mimeType().get();
-                        log.info("    MIME 타입: {}", mimeType);
-
                         if (mimeType.contains("jpeg")) {
                             fileExtension = ".jpg";
                         } else if (mimeType.contains("webp")) {
@@ -377,61 +338,49 @@ public class ImgService {
                         }
                     }
 
-                    // 이미지 바이너리 데이터 추출
                     if (blob.data() != null && blob.data().isPresent()) {
                         byte[] imageData = blob.data().get();
-                        log.info("    이미지 데이터 크기: {} bytes", imageData.length);
+                        log.debug("이미지 데이터 크기: {} bytes", imageData.length);
 
-                        // S3 저장
                         String fileName = "generated_image" + fileExtension;
                         String s3Key = saveBinaryFile(fileName, imageData);
 
                         if (s3Key != null) {
-                            log.info("  ✓ 이미지 저장 성공");
-                            log.info("    S3 키: {}", s3Key);
-                            // *** 중요: s3Key 반환 (imageUrl로 변환하지 않음) ***
+                            log.info("이미지 저장 성공 - S3 키: {}", s3Key);
                             return s3Key;
                         } else {
-                            log.error("  ❌ 이미지 저장 실패");
+                            log.error("이미지 저장 실패");
                             return null;
                         }
-                    } else {
-                        log.error("  ❌ 이미지 데이터 없음");
                     }
                 }
             }
 
-            log.error("❌ 이미지 데이터를 찾을 수 없음");
+            log.error("응답에서 이미지 데이터를 찾을 수 없음");
             return null;
 
         } catch (Exception e) {
-            log.error("❌ 응답 처리 중 오류: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("응답 처리 중 오류: {}", e.getMessage(), e);
             return null;
         }
     }
 
     /**
-     * API 예외 처리
+     * API 예외 처리 및 QuotaExceededException 발생
      */
-    private void handleApiException(ApiException e) {
-        log.error("═══════════════════════════════════════════════════════════");
-        log.error("❌ [Gemini API 에러]");
-        log.error("═══════════════════════════════════════════════════════════");
-
+    private void handleApiException(ApiException e) throws QuotaExceededException {
         String errorMessage = e.getMessage();
-        log.error("에러 메시지: {}", errorMessage);
+        log.error("Gemini API 에러: {}", errorMessage);
 
-        // 429: 할당량 초과
         if (errorMessage != null &&
             (errorMessage.contains("429") ||
              errorMessage.contains("quota") ||
              errorMessage.contains("Quota exceeded"))) {
             double retryAfterSeconds = extractRetryAfterSeconds(errorMessage);
-            log.warn("⏱️  API 할당량 초과 - 재시도 대기: {}초", retryAfterSeconds);
+            long retryAfterMillis = retryAfterSeconds > 0 ? (long) (retryAfterSeconds * 1000) : 60000;
+            log.warn("API 할당량 초과 - 재시도 대기: {}초", retryAfterSeconds);
+            throw new QuotaExceededException("API 할당량이 초과되었습니다. 잠시 후 다시 시도해주세요.", retryAfterMillis);
         }
-
-        log.error("═══════════════════════════════════════════════════════════");
     }
 
     /**
@@ -451,41 +400,37 @@ public class ImgService {
     }
 
     /**
-     * 모든 이미지 조회 (저장 수 기준 정렬)
+     * 페이지네이션으로 이미지 조회
+     * Spring Data JPA Page 객체 직접 반환
      *
+     * @param pageable 페이지네이션 정보
      * @param userEmail 현재 로그인한 사용자 이메일 (null 가능)
-     * @return 이미지 목록
+     * @return Page<ImageListResponse>
      */
-    public List<ImageListResponse> getAllImages(String userEmail) {
-        List<Image> images = imageRepository.findAll();
+    public Page<ImageListResponse> getPagedImages(Pageable pageable, String userEmail) {
+        Page<Image> imagePage = imageRepository.findAll(pageable);
 
-        // 저장 수 기준 내림차순 정렬
-        images.sort((a, b) -> {
-            Long countA = a.getUserSaveImages() != null ? (long) a.getUserSaveImages().size() : 0;
-            Long countB = b.getUserSaveImages() != null ? (long) b.getUserSaveImages().size() : 0;
-            return countB.compareTo(countA);
-        });
+        return imagePage.map(image -> convertToImageListResponse(image, userEmail));
+    }
 
-        // DTO로 변환
-        return images.stream()
-                .map(image -> {
-                    // 현재 사용자가 이 이미지를 즐겨찾기했는지 확인
-                    Boolean isFavorited = false;
-                    if (userEmail != null && !userEmail.trim().isEmpty()) {
-                        isFavorited = image.getUserSaveImages() != null &&
-                                image.getUserSaveImages().stream()
-                                        .anyMatch(usi -> userEmail.equals(usi.getUser().getEmail()));
-                    }
+    /**
+     * Image 엔티티를 ImageListResponse DTO로 변환
+     */
+    private ImageListResponse convertToImageListResponse(Image image, String userEmail) {
+        Boolean isFavorited = false;
+        if (userEmail != null && !userEmail.trim().isEmpty()) {
+            isFavorited = image.getUserSaveImages() != null &&
+                    image.getUserSaveImages().stream()
+                            .anyMatch(usi -> userEmail.equals(usi.getUser().getEmail()));
+        }
 
-                    return ImageListResponse.builder()
-                            .imageUrl(generateS3Url(image.getS3Key()))
-                            .s3Key(image.getS3Key())
-                            .prompt(image.getPrompt())
-                            .saveCount((long) (image.getUserSaveImages() != null ? image.getUserSaveImages().size() : 0))
-                            .creatorEmail(image.getCreatorEmail())
-                            .isFavorited(isFavorited)
-                            .build();
-                })
-                .toList();
+        return ImageListResponse.builder()
+                .imageUrl(generateS3Url(image.getS3Key()))
+                .s3Key(image.getS3Key())
+                .prompt(image.getPrompt())
+                .saveCount((long) (image.getUserSaveImages() != null ? image.getUserSaveImages().size() : 0))
+                .creatorEmail(image.getCreatorEmail())
+                .isFavorited(isFavorited)
+                .build();
     }
 }

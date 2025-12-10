@@ -2,20 +2,17 @@ package com.example.backend.service;
 
 import com.example.backend.dto.ImageListResponse;
 import com.example.backend.dto.UserResponseDto;
-import com.example.backend.dto.UserSaveImagesRepository;
 import com.example.backend.entity.Image;
 import com.example.backend.entity.User;
 import com.example.backend.entity.UserSaveImages;
 import com.example.backend.repository.ImageRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.UserSaveImagesRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -25,6 +22,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
     private final UserSaveImagesRepository userSaveImagesRepository;
+    private final ImgService imgService;
 
     public UserResponseDto createUser(String email) {
         User user = userRepository.findByEmail(email)
@@ -93,10 +91,11 @@ public class UserService {
     }
 
     /**
-     * Presigned URL 생성 (ImageController와 동일한 로직)
+     * Presigned URL 생성 (ImgService 위임)
      */
     private String generatePresignedUrl(String s3Key) {
-        return "/download/" + s3Key;
+        String presignedUrl = imgService.generateS3Url(s3Key);
+        return presignedUrl != null ? presignedUrl : "/download/" + s3Key;
     }
 
     /**
