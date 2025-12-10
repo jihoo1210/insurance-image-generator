@@ -59,7 +59,7 @@
 │  │  - generateImage()             │ │
 │  │  - generateImageWithAttachment()│ │
 │  │  - generateS3Url()             │ │
-│  │  - getAllImages()              │ │
+│  │  - getPagedImages()            │ │
 │  └────────────────────────────────┘ │
 └──────────────┬──────────────────────┘
                │
@@ -77,11 +77,11 @@
 ## 🛠️ 기술 스택
 
 ### Backend
-- **Framework**: Spring Boot 3.2.14
+- **Framework**: Spring Boot 3.5.x
 - **Language**: Java 17
 - **Build Tool**: Gradle
 - **ORM**: JPA / Hibernate
-- **Database**: H2 (Development)
+- **Database**: MariaDB (AWS RDS)
 - **Authentication**: Spring Security + OAuth2
 
 ### Frontend
@@ -112,7 +112,7 @@ org.springframework.boot:spring-boot-starter-data-jpa
 org.springframework.boot:spring-boot-starter-thymeleaf
 
 // Database
-com.h2database:h2
+org.mariadb.jdbc:mariadb-java-client
 
 // Utilities
 org.projectlombok:lombok
@@ -284,7 +284,8 @@ insurance-image-generator/
 │   ├── src/main/java/com/example/backend/
 │   │   ├── controller/
 │   │   │   ├── ImageController.java      # 이미지 생성/다운로드
-│   │   │   ├── MainController.java       # 로그인 상태 확인
+│   │   │   ├── AuthController.java       # OAuth2 인증
+│   │   │   ├── MainController.java       # 메인 페이지
 │   │   │   └── UserController.java       # 사용자 관리
 │   │   ├── service/
 │   │   │   ├── ImgService.java           # Gemini API 호출
@@ -298,7 +299,10 @@ insurance-image-generator/
 │   │   │   └── UserResponseDto.java      # 사용자 DTO
 │   │   ├── repository/
 │   │   │   ├── ImageRepository.java
-│   │   │   └── UserRepository.java
+│   │   │   ├── UserRepository.java
+│   │   │   └── UserSaveImagesRepository.java
+│   │   ├── util/
+│   │   │   └── AuthHelper.java           # 인증 유틸리티
 │   │   └── config/
 │   │       ├── SecurityConfig.java       # Spring Security 설정
 │   │       └── AwsConfig.java            # AWS S3 설정
@@ -312,7 +316,8 @@ insurance-image-generator/
 │   │   │   │   └── script.js             # 메인 로직
 │   │   │   └── css/
 │   │   │       └── style.css             # 스타일 (다크모드)
-│   │   └── application.yaml              # 설정 파일
+│   │   ├── application.yml               # 로컬 설정 (gitignore)
+│   │   └── application-prod.yml          # 운영 설정
 │   └── build.gradle
 └── README.md
 ```
@@ -398,12 +403,16 @@ server:
 # 데이터베이스
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
+    url: jdbc:mariadb://${RDS_HOST}:${RDS_PORT}/${RDS_DB_NAME}
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
+  sql:
+    init:
+      mode: never
 
 # 템플릿
   thymeleaf:
@@ -590,6 +599,15 @@ git push origin feature/amazing-feature
 
 ## 🔄 업데이트 이력
 
+### v1.1.0 (2025-12-10)
+- 🔧 Spring Pageable 기반 페이지네이션 리팩토링
+- 🖼️ 이미지 업로드 미리보기 기능 추가
+- ✅ 업로드 성공 상태 UI 피드백 개선
+- 🛡️ 데이터 손실 방지를 위한 SQL 초기화 비활성화
+- 🧹 테스트/mock 관련 설정 제거
+- 🔨 AuthHelper 유틸 클래스 추가로 중복 코드 제거
+- 🐛 이미지 그리드 중복 렌더링 버그 수정
+
 ### v1.0.0 (2025-12-07)
 - ✨ 초기 출시
 - 📸 이미지 생성 기능
@@ -601,7 +619,6 @@ git push origin feature/amazing-feature
 ### 계획 중
 - [ ] 이미지 필터링
 - [ ] 사용자 통계 대시보드
-- [ ] API 속도 제한
 - [ ] 다국어 지원
 - [ ] 모바일 앱
 
@@ -616,7 +633,7 @@ git push origin feature/amazing-feature
 
 ---
 
-**마지막 업데이트**: 2025년 12월 7일  
-**현재 버전**: v1.0.0  
+**마지막 업데이트**: 2025년 12월 10일
+**현재 버전**: v1.1.0
 **상태**: ✅ Production Ready
 
