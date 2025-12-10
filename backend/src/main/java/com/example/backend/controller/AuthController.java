@@ -35,21 +35,17 @@ public class AuthController {
     public String oauth2Success(Authentication authentication, Model model) {
         log.info("OAuth2 로그인 성공");
 
-        authHelper.checkLogin(model);
-
         if (authentication instanceof OAuth2AuthenticationToken token) {
             Map<String, Object> attributes = token.getPrincipal().getAttributes();
 
             String email = (String) attributes.getOrDefault("email", "");
             if (!email.isEmpty()) {
                 UserResponseDto response = userService.createUser(email);
-                model.addAttribute("message", response.getEmail() + "님 환영합니다!");
-                model.addAttribute("isHomePage", true);
                 log.info("사용자 생성/조회: {}", email);
             }
         }
 
-        return "index";
+        return "redirect:/";
     }
 
     /**
