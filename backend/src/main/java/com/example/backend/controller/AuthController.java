@@ -44,6 +44,7 @@ public class AuthController {
             if (!email.isEmpty()) {
                 UserResponseDto response = userService.createUser(email);
                 model.addAttribute("message", response.getEmail() + "님 환영합니다!");
+                model.addAttribute("isHomePage", true);
                 log.info("사용자 생성/조회: {}", email);
             }
         }
