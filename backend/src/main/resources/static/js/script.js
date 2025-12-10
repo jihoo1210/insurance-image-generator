@@ -141,12 +141,17 @@ function removeAttachment() {
 }
 
 /**
- * 이미지를 새 창에서 열기
+ * 이미지를 새 창에서 열기 (브라우저 표시용 URL 사용)
  */
 function openImageInNewTab() {
     const resultImage = document.getElementById('resultImage');
-    if (resultImage && resultImage.src) {
-        window.open(resultImage.src, '_blank');
+    if (resultImage) {
+        // displayUrl이 있으면 사용, 없으면 src 사용
+        const displayUrl = resultImage.getAttribute('data-display-url');
+        const url = displayUrl && displayUrl.trim() !== '' ? displayUrl : resultImage.src;
+        if (url) {
+            window.open(url, '_blank');
+        }
     }
 }
 
@@ -299,6 +304,7 @@ function showLoading(event) {
             // 이 데이터들은 Mustache가 렌더링 시 body 태그에 data-속성으로 넣어준 값입니다.
             const success = body.getAttribute('data-success');
             const imageUrl = body.getAttribute('data-image-url');
+            const displayUrl = body.getAttribute('data-display-url');
             const s3Key = body.getAttribute('data-s3-key');
             const message = body.getAttribute('data-message');
             const isQuotaExceeded = body.getAttribute('data-is-quota-exceeded');
@@ -315,6 +321,7 @@ function showLoading(event) {
                 // 성공
                 resultImage.src = imageUrl;
                 resultImage.setAttribute('data-s3-key', s3Key);
+                resultImage.setAttribute('data-display-url', displayUrl || imageUrl);
                 downloadBtn.href = '/download/' + s3Key;
                 resultDiv.style.display = 'block';
             } else if (success === 'false') {
@@ -453,6 +460,7 @@ window.addEventListener('load', function() {
     const body = document.body;
     const success = body.getAttribute('data-success');
     const imageUrl = body.getAttribute('data-image-url');
+    const displayUrl = body.getAttribute('data-display-url');
     const s3Key = body.getAttribute('data-s3-key');
     const message = body.getAttribute('data-message');
 
@@ -467,6 +475,9 @@ window.addEventListener('load', function() {
                 if (s3Key) {
                     resultImage.setAttribute('data-s3-key', s3Key);
                     downloadBtn.href = '/download/' + s3Key;
+                }
+                if (displayUrl) {
+                    resultImage.setAttribute('data-display-url', displayUrl);
                 }
                 if (resultDiv) resultDiv.style.display = 'block';
                 if (generateForm) generateForm.style.display = 'block';

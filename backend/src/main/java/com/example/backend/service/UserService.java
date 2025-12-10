@@ -78,9 +78,11 @@ public class UserService {
         return user.getUserSaveImagesList().stream()
                 .map(userSaveImages -> {
                     Image image = userSaveImages.getImage();
+                    String s3Key = image.getS3Key();
                     return ImageListResponse.builder()
-                            .imageUrl(generatePresignedUrl(image.getS3Key()))
-                            .s3Key(image.getS3Key())
+                            .imageUrl(generatePresignedUrl(s3Key))
+                            .displayUrl(generateDisplayUrl(s3Key))
+                            .s3Key(s3Key)
                             .prompt(image.getPrompt())
                             .saveCount((long) (image.getUserSaveImages() != null ? image.getUserSaveImages().size() : 0))
                             .creatorEmail(image.getCreatorEmail())
@@ -91,11 +93,19 @@ public class UserService {
     }
 
     /**
-     * Presigned URL 생성 (ImgService 위임)
+     * Presigned URL 생성 - 다운로드용 (ImgService 위임)
      */
     private String generatePresignedUrl(String s3Key) {
         String presignedUrl = imgService.generateS3Url(s3Key);
         return presignedUrl != null ? presignedUrl : "/download/" + s3Key;
+    }
+
+    /**
+     * Display URL 생성 - 브라우저 표시용 (ImgService 위임)
+     */
+    private String generateDisplayUrl(String s3Key) {
+        String displayUrl = imgService.generateDisplayUrl(s3Key);
+        return displayUrl != null ? displayUrl : "/download/" + s3Key;
     }
 
     /**

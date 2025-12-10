@@ -52,7 +52,7 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-warm-50 via-warm-100 to-warm-200 min-h-screen"
-      {{#success}}data-success="{{success}}" data-image-url="{{imageUrl}}" data-s3-key="{{s3Key}}"{{/success}}
+      {{#success}}data-success="{{success}}" data-image-url="{{imageUrl}}" data-display-url="{{displayUrl}}" data-s3-key="{{s3Key}}"{{/success}}
       data-message="{{message}}"
       {{#isQuotaExceeded}}data-is-quota-exceeded="{{isQuotaExceeded}}"{{/isQuotaExceeded}}>
 
@@ -73,7 +73,7 @@
                             <p class="text-amber-700 text-sm leading-relaxed">
                                 서버 점검 과정에서 일부 이미지 데이터가 손실되었습니다.
                                 현재 백업 데이터를 기반으로 복구를 완료하였으나, 일부 최근 생성된 이미지는 복구되지 않았을 수 있습니다.
-                                불편을 드려 진심으로 사과드립니다.
+                                불편을 드려 진심으로 사과드립니다. 추가적인 문의는 jihoostudy1@gmail.com으로 보내주시면 갑사하겠습니다.
                             </p>
                         </div>
                     </div>
@@ -92,7 +92,7 @@
                 <div id="resultDiv" class="hidden mb-8 animate-fadeIn">
                     <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
                         <div class="relative group cursor-pointer" onclick="openImageInNewTab()">
-                            <img id="resultImage" alt="생성된 이미지" data-s3-key=""
+                            <img id="resultImage" alt="생성된 이미지" data-s3-key="" data-display-url=""
                                  class="w-full h-auto object-contain bg-warm-100" />
                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                                 <span class="opacity-0 group-hover:opacity-100 transition-opacity text-white bg-black/50 px-4 py-2 rounded-lg text-sm">

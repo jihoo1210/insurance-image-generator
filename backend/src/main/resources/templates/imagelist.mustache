@@ -67,8 +67,8 @@
                     {{#images}}
                     <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
                         <!-- 이미지 -->
-                        <div class="relative aspect-square overflow-hidden bg-warm-100 cursor-pointer" onclick="window.open('{{imageUrl}}', '_blank')">
-                            <img src="{{imageUrl}}" alt="생성된 이미지" class="image-zoom w-full h-full object-contain bg-gray-100" />
+                        <div class="relative aspect-square overflow-hidden bg-warm-100 cursor-pointer" onclick="window.open('{{displayUrl}}', '_blank')">
+                            <img src="{{displayUrl}}" alt="생성된 이미지" class="image-zoom w-full h-full object-contain bg-gray-100" />
                             <div class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
                             <!-- 저장 수 뱃지 -->
                             <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 shadow-md">
@@ -235,7 +235,12 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ s3Key: s3Key.trim(), email: userEmail })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     showAlert(data.message);
@@ -246,7 +251,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('요청 중 오류가 발생했습니다');
+                showAlert('요청 중 오류가 발생했습니다: ' + error.message);
             });
         }
     </script>

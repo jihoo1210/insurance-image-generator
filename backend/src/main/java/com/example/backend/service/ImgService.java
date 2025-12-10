@@ -108,19 +108,42 @@ public class ImgService {
     }
 
     /**
-     * S3에 저장된 객체의 Presigned URL을 생성
+     * S3에 저장된 객체의 Presigned URL을 생성 (다운로드용)
      * 퍼블릭 접근이 비활성화된 S3도 일시적으로 접근 가능하게 함
      *
      * @param s3Key S3 객체 키
      * @return Presigned URL (1시간 유효)
      */
     public String generateS3Url(String s3Key) {
+        return generatePresignedUrl(s3Key, "attachment");
+    }
+
+    /**
+     * S3에 저장된 객체의 Presigned URL을 생성 (브라우저 표시용)
+     * Content-Disposition: inline으로 설정하여 브라우저에서 직접 표시
+     *
+     * @param s3Key S3 객체 키
+     * @return Presigned URL (1시간 유효)
+     */
+    public String generateDisplayUrl(String s3Key) {
+        return generatePresignedUrl(s3Key, "inline");
+    }
+
+    /**
+     * Presigned URL 생성 공통 메서드
+     *
+     * @param s3Key S3 객체 키
+     * @param contentDisposition attachment(다운로드) 또는 inline(브라우저 표시)
+     * @return Presigned URL (1시간 유효)
+     */
+    private String generatePresignedUrl(String s3Key, String contentDisposition) {
         try {
-            log.debug("S3 Presigned URL 생성 중 - 키: {}", s3Key);
+            log.debug("S3 Presigned URL 생성 중 - 키: {}, disposition: {}", s3Key, contentDisposition);
 
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucketName)
                     .key(s3Key)
+                    .responseContentDisposition(contentDisposition)
                     .build();
 
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
@@ -426,9 +449,11 @@ public class ImgService {
                             .anyMatch(usi -> userEmail.equals(usi.getUser().getEmail()));
         }
 
+        String s3Key = image.getS3Key();
         return ImageListResponse.builder()
-                .imageUrl(generateS3Url(image.getS3Key()))
-                .s3Key(image.getS3Key())
+                .imageUrl(generateS3Url(s3Key))
+                .displayUrl(generateDisplayUrl(s3Key))
+                .s3Key(s3Key)
                 .prompt(image.getPrompt())
                 .saveCount((long) (image.getUserSaveImages() != null ? image.getUserSaveImages().size() : 0))
                 .creatorEmail(image.getCreatorEmail())

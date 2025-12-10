@@ -71,11 +71,13 @@ public class ImageController {
             }
 
             if (s3Key != null) {
-                String presignedUrl = imgService.generateS3Url(s3Key);
+                String downloadUrl = imgService.generateS3Url(s3Key);
+                String displayUrl = imgService.generateDisplayUrl(s3Key);
 
                 model.addAttribute("success", true);
                 model.addAttribute("s3Key", s3Key);
-                model.addAttribute("imageUrl", presignedUrl != null ? presignedUrl : "/download/" + s3Key);
+                model.addAttribute("imageUrl", downloadUrl != null ? downloadUrl : "/download/" + s3Key);
+                model.addAttribute("displayUrl", displayUrl != null ? displayUrl : "/download/" + s3Key);
                 model.addAttribute("message", "이미지 생성 성공!");
                 log.info("이미지 생성 성공 - S3 키: {}", s3Key);
             } else {
