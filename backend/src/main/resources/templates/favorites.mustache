@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>내 즐겨찾기 - KB 손해보험</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,21 +12,21 @@
                 extend: {
                     colors: {
                         warm: {
-                            50: '#fdf8f3',
-                            100: '#f9efe4',
-                            200: '#f3dcc8',
-                            300: '#e8c4a0',
-                            400: '#d4a574',
-                            500: '#c4935f',
-                            600: '#b17a4a',
-                            700: '#936340',
-                            800: '#7a5239',
-                            900: '#654533',
+                            50: '#faf7f2',
+                            100: '#f5efe6',
+                            200: '#e8dfd0',
+                            300: '#d9ccb8',
+                            400: '#c4ad8f',
+                            500: '#a68b5b',
+                            600: '#8b7355',
+                            700: '#6d5a45',
+                            800: '#5a4a3a',
+                            900: '#3d342a',
                         },
                         accent: {
                             DEFAULT: '#d4a574',
                             hover: '#c4955f',
-                            light: '#e8c9a8'
+                            light: '#e8c9a8',
                         }
                     }
                 }
@@ -34,20 +34,16 @@
         }
     </script>
     <style>
-        .image-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .image-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px -8px rgba(101, 69, 51, 0.2);
-        }
-        .btn-remove {
-            transition: all 0.2s ease;
-        }
-        .btn-remove:hover {
-            transform: scale(1.02);
-        }
-        /* 토스트 애니메이션 */
+        .btn-hover { transition: all 0.2s ease; }
+        .btn-hover:hover { transform: translateY(-2px); }
+        .btn-hover:active { transform: translateY(0); }
+
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -8px rgba(166, 139, 91, 0.25); }
+
+        .image-zoom { transition: transform 0.3s ease; }
+        .image-zoom:hover { transform: scale(1.03); }
+
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -58,175 +54,155 @@
         }
     </style>
 </head>
-<body class="bg-warm-50 min-h-screen">
-    <!-- 토스트 컨테이너 -->
-    <div id="toastContainer" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2"></div>
+<body class="bg-gradient-to-br from-warm-50 via-warm-100 to-warm-200 min-h-screen">
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="min-h-screen flex flex-col">
         <!-- 헤더 -->
-        <header class="bg-gradient-to-r from-warm-700 via-warm-600 to-warm-700 rounded-2xl shadow-lg p-6 mb-8">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <!-- 좌측: 뒤로가기 -->
-                <a href="/" class="flex items-center gap-2 text-warm-100 hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    <span class="font-medium">메인으로</span>
-                </a>
+        <header class="bg-gradient-to-r from-warm-800 to-warm-900 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16 md:h-20">
+                    <!-- 좌측: 네비게이션 -->
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <a href="/" class="btn-hover inline-flex items-center justify-center gap-2 bg-warm-600 hover:bg-warm-500 text-white w-10 h-10 md:w-28 md:h-10 rounded-lg text-sm font-medium shadow-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            <span class="hidden md:inline">홈으로</span>
+                        </a>
+                        <a href="/list" class="btn-hover inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white w-10 h-10 md:w-28 md:h-10 rounded-lg text-sm font-medium shadow-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                            <span class="hidden md:inline">전체보기</span>
+                        </a>
+                    </div>
 
-                <!-- 중앙: 제목 -->
-                <div class="text-center">
-                    <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
-                        <svg class="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        </svg>
-                        내 즐겨찾기
-                    </h1>
-                    <p class="text-warm-200 mt-1">저장한 이미지들을 확인하세요</p>
-                </div>
+                    <!-- 중앙: 제목 -->
+                    <div class="flex-1 text-center px-4">
+                        <h1 class="text-lg md:text-2xl font-bold text-accent flex items-center justify-center gap-2">
+                            <svg class="w-6 h-6 md:w-7 md:h-7 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            내 즐겨찾기
+                        </h1>
+                        <p class="text-warm-300 text-xs md:text-sm hidden sm:block">저장한 이미지들을 확인하세요</p>
+                    </div>
 
-                <!-- 우측: 사용자 정보 -->
-                <div class="flex items-center gap-3">
-                    {{#User}}
-                    <span class="text-warm-200 text-sm hidden sm:inline">{{User.email}}</span>
-                    <a href="/auth/logout" class="px-4 py-2 bg-warm-800/50 hover:bg-warm-800 text-warm-100 rounded-lg text-sm font-medium transition-colors">
-                        로그아웃
-                    </a>
-                    {{/User}}
-                    {{^User}}
-                    <a href="/oauth2/authorization/google" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium shadow transition-colors">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                        </svg>
-                        로그인
-                    </a>
-                    {{/User}}
+                    <!-- 우측: 로그인 -->
+                    <div class="flex items-center">
+                        {{#User}}
+                        <div class="flex items-center gap-2 md:gap-3 bg-warm-700/50 rounded-full px-3 py-1.5 md:px-4 md:py-2">
+                            <span class="user-email text-accent text-sm font-medium truncate max-w-[100px] md:max-w-[150px]">{{User.email}}</span>
+                            <a href="/auth/logout" class="btn-hover bg-red-500 hover:bg-red-600 text-white px-3 py-1 md:px-4 md:py-1.5 rounded-full text-xs font-medium whitespace-nowrap">
+                                로그아웃
+                            </a>
+                        </div>
+                        {{/User}}
+                        {{^User}}
+                        <a href="/oauth2/authorization/google" class="btn-hover inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 w-[88px] h-10 md:w-[236px] md:h-10 rounded-lg text-sm font-medium shadow-md">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            <span class="hidden md:inline">Google 로그인</span>
+                        </a>
+                        {{/User}}
+                    </div>
                 </div>
             </div>
         </header>
 
-        <!-- 이미지 목록 -->
-        {{#images}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {{#images}}
-            <div class="image-card bg-white rounded-xl shadow-md overflow-hidden border border-warm-200">
-                <!-- 이미지 -->
-                <div class="relative aspect-square overflow-hidden bg-warm-100 cursor-pointer" onclick="window.open('{{imageUrl}}', '_blank')">
-                    <img src="{{imageUrl}}" alt="생성된 이미지" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+        <!-- 메인 콘텐츠 -->
+        <main class="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto">
+                <!-- 이미지 그리드 -->
+                {{#images}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {{#images}}
+                    <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <!-- 이미지 -->
+                        <div class="relative aspect-square overflow-hidden bg-warm-100 cursor-pointer" onclick="window.open('{{imageUrl}}', '_blank')">
+                            <img src="{{imageUrl}}" alt="생성된 이미지" class="image-zoom w-full h-full object-contain bg-gray-100" />
+                            <div class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
+                            <!-- 저장 수 뱃지 -->
+                            <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 shadow-md">
+                                <svg class="w-4 h-4 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                                <span class="text-sm font-semibold text-warm-800">{{saveCount}}</span>
+                            </div>
+                        </div>
+
+                        <!-- 정보 -->
+                        <div class="p-4">
+                            <!-- 프롬프트 -->
+                            <p class="text-warm-700 text-sm line-clamp-2 mb-3 h-10" title="{{prompt}}">{{prompt}}</p>
+
+                            <!-- 제작자 -->
+                            <div class="flex items-center gap-2 text-warm-500 text-xs mb-4">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <span class="truncate">{{creatorEmail}}</span>
+                            </div>
+
+                            <!-- 버튼 -->
+                            <div class="flex gap-2">
+                                <a href="/download/{{s3Key}}" download class="btn-hover flex-1 inline-flex items-center justify-center gap-1.5 bg-warm-800 hover:bg-warm-900 text-accent px-3 py-2 rounded-lg text-sm font-medium">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    다운로드
+                                </a>
+                                <button type="button" onclick="removeFavorite('{{s3Key}}')" class="btn-hover flex-1 inline-flex items-center justify-center gap-1.5 bg-rose-500 hover:bg-rose-600 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    제거
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {{/images}}
                 </div>
+                {{/images}}
 
-                <!-- 정보 섹션 -->
-                <div class="p-4">
-                    <!-- 프롬프트 -->
-                    <div class="mb-3">
-                        <p class="text-xs text-warm-500 mb-1">프롬프트</p>
-                        <p class="text-sm text-warm-800 line-clamp-2">{{prompt}}</p>
+                {{^images}}
+                <!-- 빈 상태 -->
+                <div class="text-center py-20">
+                    <div class="w-24 h-24 mx-auto mb-6 bg-warm-200 rounded-full flex items-center justify-center">
+                        <svg class="w-12 h-12 text-warm-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
                     </div>
-
-                    <!-- 저장 수 & 제작자 -->
-                    <div class="flex items-center justify-between text-xs text-warm-500 mb-4">
-                        <span class="flex items-center gap-1">
-                            <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                            </svg>
-                            {{saveCount}}
-                        </span>
-                        <span class="truncate max-w-[120px]" title="{{creatorEmail}}">{{creatorEmail}}</span>
-                    </div>
-
-                    <!-- 액션 버튼 -->
-                    <div class="flex gap-2">
-                        <a href="/download/{{s3Key}}" download class="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-warm-600 hover:bg-warm-700 text-white rounded-lg text-sm font-medium transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            다운로드
-                        </a>
-                        <button type="button" onclick="removeFavorite('{{s3Key}}')" class="btn-remove flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            제거
-                        </button>
-                    </div>
+                    <h3 class="text-xl font-semibold text-warm-700 mb-2">저장한 이미지가 없습니다</h3>
+                    <p class="text-warm-500 mb-6">마음에 드는 이미지를 즐겨찾기에 추가해보세요</p>
+                    <a href="/" class="btn-hover inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-xl font-semibold shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        이미지 생성하러 가기
+                    </a>
                 </div>
+                {{/images}}
             </div>
-            {{/images}}
-        </div>
-        {{/images}}
+        </main>
 
-        <!-- 빈 상태 -->
-        {{^images}}
-        <div class="flex flex-col items-center justify-center py-20">
-            <div class="w-24 h-24 bg-warm-200 rounded-full flex items-center justify-center mb-6">
-                <svg class="w-12 h-12 text-warm-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
+        <!-- 푸터 -->
+        <footer class="bg-warm-800 text-warm-400 py-4">
+            <div class="max-w-7xl mx-auto px-4 text-center text-sm">
+                <p>&copy; 2024 KB 손해보험 김포 한강 지점. Powered by Google Gemini AI.</p>
             </div>
-            <h3 class="text-xl font-semibold text-warm-700 mb-2">저장한 이미지가 없습니다</h3>
-            <p class="text-warm-500 mb-6">마음에 드는 이미지를 즐겨찾기에 추가해보세요</p>
-            <a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-warm-600 hover:bg-warm-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-warm-600/30">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                </svg>
-                이미지 생성하러 가기
-            </a>
-        </div>
-        {{/images}}
+        </footer>
     </div>
 
+    <!-- 토스트 컨테이너 -->
+    <div id="toastContainer" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2"></div>
+
+    <script src="/js/script.js"></script>
     <script>
-        /**
-         * 토스트 메시지 표시
-         */
-        function showToast(message, isSuccess = true) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                padding: 16px 24px;
-                border-radius: 12px;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                animation: slideDown 0.3s ease-out;
-                ${isSuccess
-                    ? 'background: linear-gradient(135deg, #10b981, #059669); color: white;'
-                    : 'background: linear-gradient(135deg, #ef4444, #dc2626); color: white;'
-                }
-            `;
-            toast.innerHTML = `
-                <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    ${isSuccess
-                        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
-                        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'
-                    }
-                </svg>
-                <span style="font-size: 14px; font-weight: 500;">${message}</span>
-            `;
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.animation = 'slideUp 0.3s ease-out forwards';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        /**
-         * 현재 로그인한 사용자 이메일 가져오기
-         */
-        function getCurrentUserEmail() {
-            {{#User}}
-            return '{{User.email}}';
-            {{/User}}
-            {{^User}}
-            return null;
-            {{/User}}
-        }
-
         /**
          * 즐겨찾기에서 이미지 제거
          */
@@ -255,17 +231,17 @@
             })
             .then(data => {
                 if (data.success) {
-                    showToast('즐겨찾기에서 제거되었습니다', true);
+                    showAlert('즐겨찾기에서 제거되었습니다', true);
                     setTimeout(() => {
                         location.reload();
                     }, 1000);
                 } else {
-                    showToast(data.message || '제거에 실패했습니다', false);
+                    showAlert(data.message || '제거에 실패했습니다', false);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showToast('요청 중 오류가 발생했습니다: ' + error.message, false);
+                showAlert('요청 중 오류가 발생했습니다: ' + error.message, false);
             });
         }
     </script>
