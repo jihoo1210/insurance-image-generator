@@ -71,20 +71,20 @@ function handleImageAttachment(event) {
 
     if (uploadIcon) {
         uploadIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
-        uploadIcon.classList.remove('text-warm-400');
-        uploadIcon.classList.add('text-green-500');
+        uploadIcon.classList.remove('text-warm-400', 'group-hover:text-accent');
+        uploadIcon.classList.add('text-green-500', 'group-hover:text-green-600');
     }
     if (uploadText) {
         uploadText.textContent = '업로드 성공! (클릭하여 변경)';
-        uploadText.classList.remove('text-warm-600');
-        uploadText.classList.add('text-green-600');
+        uploadText.classList.remove('text-warm-600', 'group-hover:text-accent');
+        uploadText.classList.add('text-green-600', 'group-hover:text-green-700');
     }
     if (uploadHint) {
         uploadHint.textContent = '다른 이미지로 변경할 수 있습니다';
     }
     if (uploadBtn) {
-        uploadBtn.classList.remove('border-warm-300');
-        uploadBtn.classList.add('border-green-300', 'bg-green-50');
+        uploadBtn.classList.remove('border-warm-300', 'hover:border-accent');
+        uploadBtn.classList.add('border-green-300', 'bg-green-50', 'hover:border-green-400', 'hover:bg-green-100');
     }
 
     // 첨부 버튼 색상을 진하게 변경
@@ -116,20 +116,20 @@ function removeAttachment() {
 
     if (uploadIcon) {
         uploadIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>';
-        uploadIcon.classList.remove('text-green-500');
-        uploadIcon.classList.add('text-warm-400');
+        uploadIcon.classList.remove('text-green-500', 'group-hover:text-green-600');
+        uploadIcon.classList.add('text-warm-400', 'group-hover:text-accent');
     }
     if (uploadText) {
         uploadText.textContent = '이미지를 드래그하거나 클릭하여 업로드';
-        uploadText.classList.remove('text-green-600');
-        uploadText.classList.add('text-warm-600');
+        uploadText.classList.remove('text-green-600', 'group-hover:text-green-700');
+        uploadText.classList.add('text-warm-600', 'group-hover:text-accent');
     }
     if (uploadHint) {
         uploadHint.textContent = 'PNG, JPG, WEBP (최대 10MB)';
     }
     if (uploadBtn) {
-        uploadBtn.classList.remove('border-green-300', 'bg-green-50');
-        uploadBtn.classList.add('border-warm-300');
+        uploadBtn.classList.remove('border-green-300', 'bg-green-50', 'hover:border-green-400', 'hover:bg-green-100');
+        uploadBtn.classList.add('border-warm-300', 'hover:border-accent');
     }
 
     // 첨부 버튼 색상을 원래대로 변경
@@ -424,12 +424,85 @@ function saveFavorite() {
 }
 
 
+// ==================== Drag and Drop ====================
+
+/**
+ * 드래그 앤 드롭 초기화
+ */
+function initDragAndDrop() {
+    const uploadBtn = document.getElementById('uploadBtn');
+    if (!uploadBtn) return;
+
+    // 드래그 이벤트 기본 동작 방지
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadBtn.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // 드래그 영역 하이라이트
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadBtn.addEventListener(eventName, () => highlight(uploadBtn), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadBtn.addEventListener(eventName, () => unhighlight(uploadBtn), false);
+    });
+
+    // 파일 드롭 처리
+    uploadBtn.addEventListener('drop', handleDrop, false);
+}
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function highlight(element) {
+    element.classList.add('border-accent', 'bg-accent/10');
+    element.classList.remove('border-warm-300');
+}
+
+function unhighlight(element) {
+    element.classList.remove('border-accent', 'bg-accent/10');
+    if (!attachedImageFile) {
+        element.classList.add('border-warm-300');
+    }
+}
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+
+    if (files.length > 0) {
+        const file = files[0];
+
+        // 이미지 파일인지 확인
+        if (!file.type.startsWith('image/')) {
+            showAlert('이미지 파일만 업로드할 수 있습니다.');
+            return;
+        }
+
+        // input 요소에 파일 설정 (handleImageAttachment와 동일한 로직 사용)
+        const input = document.getElementById('attachImage');
+
+        // DataTransfer를 사용하여 input에 파일 설정
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        input.files = dataTransfer.files;
+
+        // 기존 핸들러 호출
+        handleImageAttachment({ target: input });
+    }
+}
+
 // ==================== Page Initialization ====================
 
 /**
  * 페이지 로드 시 처리 (초기화)
  */
 window.addEventListener('load', function() {
+    // 드래그 앤 드롭 초기화
+    initDragAndDrop();
     // *** 사용자 이메일 초기화 ***
     const userEmailElement = document.querySelector('.user-email');
     if (userEmailElement) {
