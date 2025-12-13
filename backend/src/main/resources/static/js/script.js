@@ -155,6 +155,100 @@ function openImageInNewTab() {
     }
 }
 
+/**
+ * 이미지 URL을 기반으로 새 이미지 생성 페이지로 이동
+ * 이미지를 자동으로 첨부된 상태로 메인 페이지로 이동
+ * @param {string} imageUrl - 첨부할 이미지의 URL
+ */
+function generateWithImage(imageUrl) {
+    if (!imageUrl) {
+        showAlert('이미지 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    // 이미지 URL을 세션 스토리지에 저장하고 메인 페이지로 이동
+    sessionStorage.setItem('attachImageUrl', imageUrl);
+    window.location.href = '/';
+}
+
+/**
+ * 페이지 로드 시 세션 스토리지에서 이미지 URL을 확인하고 자동 첨부
+ */
+function checkAndAttachImageFromSession() {
+    const imageUrl = sessionStorage.getItem('attachImageUrl');
+    if (!imageUrl) return;
+
+    // 세션 스토리지 클리어
+    sessionStorage.removeItem('attachImageUrl');
+
+    // 이미지 URL에서 파일을 fetch하여 File 객체로 변환
+    fetch(imageUrl)
+        .then(response => {
+            if (!response.ok) throw new Error('이미지를 불러올 수 없습니다.');
+            return response.blob();
+        })
+        .then(blob => {
+            // Blob을 File 객체로 변환
+            const fileName = 'reference_image.' + (blob.type.split('/')[1] || 'jpg');
+            const file = new File([blob], fileName, { type: blob.type });
+
+            // 파일 크기 확인 (10MB 제한)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showAlert('파일 크기가 너무 큽니다. (최대 10MB)');
+                return;
+            }
+
+            // attachedImageFile 전역 변수에 설정
+            attachedImageFile = file;
+
+            // UI 업데이트
+            const statusDiv = document.getElementById('attachmentStatus');
+            const fileNameSpan = document.getElementById('attachmentFileName');
+            const imagePreview = document.getElementById('imagePreview');
+
+            if (imagePreview) {
+                imagePreview.src = imageUrl;
+            }
+            if (fileNameSpan) {
+                fileNameSpan.textContent = `📎 ${fileName}`;
+            }
+            if (statusDiv) {
+                statusDiv.classList.remove('hidden');
+            }
+
+            // 업로드 버튼 상태 변경
+            const uploadIcon = document.getElementById('uploadIcon');
+            const uploadText = document.getElementById('uploadText');
+            const uploadHint = document.getElementById('uploadHint');
+            const uploadBtn = document.getElementById('uploadBtn');
+
+            if (uploadIcon) {
+                uploadIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+                uploadIcon.classList.remove('text-warm-400', 'group-hover:text-accent');
+                uploadIcon.classList.add('text-green-500', 'group-hover:text-green-600');
+            }
+            if (uploadText) {
+                uploadText.textContent = '이미지 첨부됨 (클릭하여 변경)';
+                uploadText.classList.remove('text-warm-600', 'group-hover:text-accent');
+                uploadText.classList.add('text-green-600', 'group-hover:text-green-700');
+            }
+            if (uploadHint) {
+                uploadHint.textContent = '다른 이미지로 변경할 수 있습니다';
+            }
+            if (uploadBtn) {
+                uploadBtn.classList.remove('border-warm-300', 'hover:border-accent');
+                uploadBtn.classList.add('border-green-300', 'bg-green-50', 'hover:border-green-400', 'hover:bg-green-100');
+            }
+
+            showAlert('이미지가 자동으로 첨부되었습니다.');
+        })
+        .catch(error => {
+            console.error('이미지 첨부 실패:', error);
+            showAlert('이미지를 자동으로 첨부할 수 없습니다: ' + error.message);
+        });
+}
+
 // ==================== DOM Manipulation Functions ====================
 
 /**
@@ -503,6 +597,9 @@ function handleDrop(e) {
 window.addEventListener('load', function() {
     // 드래그 앤 드롭 초기화
     initDragAndDrop();
+
+    // 세션 스토리지에서 이미지 자동 첨부 확인
+    checkAndAttachImageFromSession();
     // *** 사용자 이메일 초기화 ***
     const userEmailElement = document.querySelector('.user-email');
     if (userEmailElement) {

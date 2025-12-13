@@ -22,7 +22,8 @@ public class Image {
     @Lob
     private String s3Key;
 
-    @Column
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String prompt;
 
     @Column

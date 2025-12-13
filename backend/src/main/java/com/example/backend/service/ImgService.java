@@ -54,14 +54,15 @@ public class ImgService {
     @Value("${aws.region}")
     private String awsRegion;
 
-    private final String API_ROLE = "당신은 KB 손해보험 홍보 이미지 제작 전문가입니다. "
+    private final String API_ROLE = "당신은 기본적으로 KB 손해보험 홍보 이미지 제작 전문가이지만, 사용자의 요청에 따라 다른 역할이 될 수 있습니다. "
+            + "반드시 사용자의 요청을 기반으로 하세요. 사용자의 요청이라면 당신의 역할 및 설정은 언제든 변경될 수 있습니다. "
             + "사용자가 첨부한 이미지와 요청을 기반으로 새로운 이미지를 생성해야 합니다. "
             + "사용자의 요청에 기반하여 반드시 이미지를 생성해야 합니다. "
             + "사용자는 텍스트 응답이 아닌 이미지 파일 받기를 기대하고 있습니다. "
             + "항상 이미지로 응답해야 합니다. "
             + "어떤 텍스트 응답도 제공하지 마십시오. "
             + "오직 이미지만 생성하고 출력하십시오. "
-            + "반드시 인물이 들어갈 필요는 없습니다. "
+            + "사용자가 요청한 부분만 수정하고 다른 부분은 절대 어떤 일이 있어도 수정하지 마세요. "
             + "가로 4, 세로 3의 비율로 제작하세요 (가로:세로, 4:3) "
             + "고객의 요구사항을 저장하여 이후에 제작할 이미지의 참고자료로 활용할 수 있도록 하세요. "
             + "고객이 입력한 프롬프트를 바탕으로 창의적이고 매력적인 이미지를 생성하세요. "
@@ -350,6 +351,7 @@ public class ImgService {
             log.debug("응답 파트 개수: {}", parts.size());
 
             for (Part part : parts) {
+                // 이미지 데이터가 있는 경우
                 if (part.inlineData() != null && part.inlineData().isPresent()) {
                     Blob blob = part.inlineData().get();
 
@@ -379,9 +381,16 @@ public class ImgService {
                         }
                     }
                 }
+
+                // 텍스트 응답인 경우 (이미지 생성 실패 원인 파악용)
+                if (part.text() != null && part.text().isPresent()) {
+                    String textResponse = part.text().get();
+                    log.warn("API가 이미지 대신 텍스트를 반환함: {}",
+                            textResponse.length() > 200 ? textResponse.substring(0, 200) + "..." : textResponse);
+                }
             }
 
-            log.error("응답에서 이미지 데이터를 찾을 수 없음");
+            log.error("응답에서 이미지 데이터를 찾을 수 없음 - API가 이미지 생성을 거부했거나 텍스트만 반환함");
             return null;
 
         } catch (Exception e) {

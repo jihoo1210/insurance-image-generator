@@ -27,12 +27,13 @@ jobs:
           chmod +x ./gradlew
           ./gradlew clean build --exclude-task test
 
-      # 빌드된 JAR과 Procfile을 압축 파일로 패키징
+      # 빌드된 JAR, Procfile, .platform을 압축 파일로 패키징
       - name: Package backend with Procfile
         run: |
           cp Procfile build/libs/
+          cp -r ../.platform build/libs/ 2>/dev/null || true
           cd build/libs
-          zip -r backend-package.zip backend-0.0.1-SNAPSHOT.jar Procfile
+          zip -r backend-package.zip backend-0.0.1-SNAPSHOT.jar Procfile .platform
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21

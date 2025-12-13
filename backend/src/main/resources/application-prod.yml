@@ -1,6 +1,10 @@
 spring:
   application:
     name: backend
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 15MB
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://${RDS_HOST}:${RDS_PORT}/${RDS_DB_NAME}
@@ -15,7 +19,7 @@ spring:
   # jpa config
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
 
   # OAuth2 설정
   security:
@@ -44,3 +48,9 @@ google:
 
 server:
   port: 5000
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
