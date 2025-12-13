@@ -243,8 +243,6 @@ function checkAndAttachImageFromSession() {
                 uploadBtn.classList.remove('border-warm-300', 'hover:border-accent');
                 uploadBtn.classList.add('border-green-300', 'bg-green-50', 'hover:border-green-400', 'hover:bg-green-100');
             }
-
-            showAlert('이미지가 자동으로 첨부되었습니다.');
         })
         .catch(error => {
             console.error('이미지 첨부 실패:', error);
