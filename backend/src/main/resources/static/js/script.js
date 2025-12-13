@@ -156,33 +156,35 @@ function openImageInNewTab() {
 }
 
 /**
- * 이미지 URL을 기반으로 새 이미지 생성 페이지로 이동
+ * S3 키를 기반으로 새 이미지 생성 페이지로 이동
  * 이미지를 자동으로 첨부된 상태로 메인 페이지로 이동
- * @param {string} imageUrl - 첨부할 이미지의 URL
+ * @param {string} s3Key - 첨부할 이미지의 S3 키
  */
-function generateWithImage(imageUrl) {
-    if (!imageUrl) {
+function generateWithImage(s3Key) {
+    if (!s3Key) {
         showAlert('이미지 정보를 찾을 수 없습니다.');
         return;
     }
 
-    // 이미지 URL을 세션 스토리지에 저장하고 메인 페이지로 이동
-    sessionStorage.setItem('attachImageUrl', imageUrl);
+    // S3 키를 세션 스토리지에 저장하고 메인 페이지로 이동
+    sessionStorage.setItem('attachImageS3Key', s3Key);
     window.location.href = '/';
 }
 
 /**
- * 페이지 로드 시 세션 스토리지에서 이미지 URL을 확인하고 자동 첨부
+ * 페이지 로드 시 세션 스토리지에서 S3 키를 확인하고 자동 첨부
  */
 function checkAndAttachImageFromSession() {
-    const imageUrl = sessionStorage.getItem('attachImageUrl');
-    if (!imageUrl) return;
+    const s3Key = sessionStorage.getItem('attachImageS3Key');
+    if (!s3Key) return;
 
     // 세션 스토리지 클리어
-    sessionStorage.removeItem('attachImageUrl');
+    sessionStorage.removeItem('attachImageS3Key');
 
-    // 이미지 URL에서 파일을 fetch하여 File 객체로 변환
-    fetch(imageUrl)
+    // 서버의 /download/ 엔드포인트를 통해 이미지 fetch (CORS 문제 회피)
+    const downloadUrl = '/download/' + encodeURIComponent(s3Key);
+
+    fetch(downloadUrl)
         .then(response => {
             if (!response.ok) throw new Error('이미지를 불러올 수 없습니다.');
             return response.blob();
@@ -208,7 +210,8 @@ function checkAndAttachImageFromSession() {
             const imagePreview = document.getElementById('imagePreview');
 
             if (imagePreview) {
-                imagePreview.src = imageUrl;
+                // 미리보기는 서버 다운로드 URL 사용
+                imagePreview.src = downloadUrl;
             }
             if (fileNameSpan) {
                 fileNameSpan.textContent = `📎 ${fileName}`;
